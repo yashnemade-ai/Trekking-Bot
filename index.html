@@ -1,57 +1,313 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrekMate AI Assistant</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .chat-window { height: 68vh; min-height: 320px; }
-    .message {
-      max-width: 85%;
-      padding: 12px 15px;
-      margin-bottom: 12px;
-      border-radius: 16px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-    button:disabled { opacity: .6; cursor: wait; }
-  </style>
-</head>
-<body class="min-h-screen bg-slate-100 flex flex-col items-center p-3 sm:p-6 font-sans">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrekMate AI Assistant</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <main class="w-full max-w-3xl mt-4 bg-white rounded-2xl shadow-xl overflow-hidden">
-    <header class="bg-emerald-600 p-5 text-white text-center">
-      <h1 class="text-2xl font-bold">🥾 TrekMate AI</h1>
-      <p class="text-sm mt-1">Your personal trekking assistant</p>
+<style>
+  * { font-family: 'Inter', system-ui, sans-serif; }
+
+  /* ───── Animated Sunset Gradient Background ───── */
+  body {
+    background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 45%, #831843 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+  }
+  body::before {
+    width: 450px; height: 450px;
+    background: #f59e0b;
+    top: -120px; left: -120px;
+    animation: float1 14s ease-in-out infinite;
+  }
+  body::after {
+    width: 550px; height: 550px;
+    background: #ec4899;
+    bottom: -180px; right: -180px;
+    animation: float2 18s ease-in-out infinite;
+  }
+  @keyframes float1 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(70px, 60px) scale(1.1); }
+  }
+  @keyframes float2 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(-90px, -70px) scale(1.05); }
+  }
+
+  /* ───── Glass Card ───── */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  /* ───── Chat Window ───── */
+  .chat-window {
+    height: 66vh;
+    min-height: 320px;
+    max-height: 620px;
+    scroll-behavior: smooth;
+  }
+  .chat-window::-webkit-scrollbar { width: 6px; }
+  .chat-window::-webkit-scrollbar-track { background: transparent; }
+  .chat-window::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  .chat-window::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  /* ───── Messages ───── */
+  .message {
+    max-width: 85%;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border-radius: 18px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 14.5px;
+    line-height: 1.55;
+    animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px -2px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .msg-user {
+    background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+    color: white;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 8px 20px -6px rgba(236, 72, 153, 0.5);
+  }
+  .msg-ai {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.08);
+  }
+  .msg-error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-bottom-left-radius: 6px;
+  }
+
+  /* ───── Message Row with Avatar ───── */
+  .msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.ai,
+  .msg-row.error { justify-content: flex-start; }
+
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px -2px rgba(0,0,0,0.12);
+  }
+
+  /* ───── Typing Indicator ───── */
+  .typing {
+    display: inline-flex;
+    gap: 5px;
+    padding: 4px 2px;
+    align-items: center;
+  }
+  .typing span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #94a3b8;
+    animation: bounce 1.4s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30%           { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ───── Input Focus Glow ───── */
+  .input-wrap:focus-within {
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+    background: #fff;
+  }
+
+  /* ───── Send Button ───── */
+  .send-btn {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .send-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px -8px rgba(236, 72, 153, 0.7);
+  }
+  .send-btn:active:not(:disabled) { transform: translateY(0) scale(0.96); }
+  .send-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  /* ───── Header shimmer ───── */
+  .shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg,
+      transparent 30%,
+      rgba(255,255,255,0.2) 50%,
+      transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3.5s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ───── Status dot pulse ───── */
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #fbbf24;
+    position: relative;
+  }
+  .status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: #fbbf24;
+    opacity: 0.6;
+    animation: pulseDot 1.8s ease-out infinite;
+  }
+  @keyframes pulseDot {
+    0%   { transform: scale(0.8); opacity: 0.7; }
+    100% { transform: scale(2);   opacity: 0; }
+  }
+
+  /* ───── Clear button hover ───── */
+  .clear-btn {
+    transition: all 0.2s ease;
+  }
+  .clear-btn:hover {
+    color: #db2777;
+    background: #fdf2f8;
+  }
+</style>
+</head>
+
+<body class="flex items-center justify-center p-3 sm:p-5">
+
+  <main class="w-full max-w-3xl glass-card rounded-3xl shadow-2xl overflow-hidden relative z-10 mt-2 sm:mt-4">
+
+    <!-- ═══ Header ═══ -->
+    <header class="relative bg-gradient-to-r from-amber-500 via-rose-500 to-pink-600 p-5 text-white overflow-hidden">
+      <div class="absolute inset-0 opacity-25"
+           style="background-image:
+             radial-gradient(circle at 15% 25%, white 1.2px, transparent 1.2px),
+             radial-gradient(circle at 85% 70%, white 1px, transparent 1px);
+             background-size: 55px 55px, 70px 70px;">
+      </div>
+      <div class="shimmer"></div>
+
+      <div class="relative flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl shadow-lg ring-1 ring-white/30">
+          🥾
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">TrekMate AI</h1>
+          <div class="flex items-center gap-2 text-xs text-amber-50/95 mt-0.5">
+            <span class="status-dot"></span>
+            <span class="font-medium">Online</span>
+            <span class="opacity-50">•</span>
+            <span>Your personal trekking assistant</span>
+          </div>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-2 text-xs bg-white/15 rounded-full px-3 py-1.5 backdrop-blur-md ring-1 ring-white/25">
+          <span>🏔️</span><span class="font-medium">Summit Ready</span>
+        </div>
+      </div>
     </header>
 
+    <!-- ═══ Chat Window ═══ -->
     <div id="chatWindow"
-         class="chat-window overflow-y-auto p-4 bg-slate-50 flex flex-col"
+         class="chat-window overflow-y-auto p-4 sm:p-5 bg-gradient-to-b from-slate-50 to-white flex flex-col"
          aria-live="polite">
-      <div class="message self-start bg-slate-200 text-slate-800">
-        Namaste! Main TrekMate AI hoon. Aap trek, route, budget, gear ya safety ke baare mein pooch sakte hain.
+
+      <div class="msg-row ai">
+        <div class="avatar bg-rose-100 text-rose-700">🥾</div>
+        <div class="message msg-ai">
+          Namaste! 🙏 I'm TrekMate AI. Ask me anything about treks, routes, budgets, gear, or safety.
+        </div>
       </div>
     </div>
 
-    <form id="chatForm" class="p-4 flex gap-2 border-t">
-      <input id="userInput" type="text" maxlength="10000"
-             class="flex-1 min-w-0 border border-slate-300 rounded-full px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
-             placeholder="Ask about any trek..." autocomplete="off" required>
-      <button id="sendBtn" type="submit"
-              class="bg-emerald-600 text-white px-5 sm:px-7 rounded-full font-semibold hover:bg-emerald-700">
-        Send
-      </button>
+    <!-- ═══ Input Form ═══ -->
+    <form id="chatForm" class="p-3 sm:p-4 border-t border-slate-100 bg-white">
+      <div class="input-wrap flex items-center gap-2 bg-slate-100 rounded-full p-1.5 pl-5 transition-all duration-200">
+
+        <input id="userInput" type="text" maxlength="10000"
+               class="flex-1 min-w-0 bg-transparent py-2.5 text-slate-700 placeholder-slate-400 text-[15px] outline-none"
+               placeholder="Ask about any trek..." autocomplete="off" required>
+
+        <button id="sendBtn" type="submit"
+                class="send-btn bg-gradient-to-br from-amber-500 to-pink-600 hover:from-amber-600 hover:to-pink-700 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30 flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.3"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+
+      </div>
     </form>
 
-    <div class="px-4 pb-4 flex justify-between text-xs text-slate-500">
-      <span>AI-generated guidance; verify local safety conditions.</span>
-      <button id="clearBtn" type="button" class="underline">Clear chat</button>
+    <!-- ═══ Footer ═══ -->
+    <div class="px-5 pb-4 pt-1 flex items-center justify-between text-[11.5px] text-slate-500 bg-white">
+      <span class="flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        AI-generated guidance; verify local safety conditions.
+      </span>
+      <button id="clearBtn" type="button"
+              class="clear-btn px-3 py-1 rounded-full text-slate-500 font-medium">
+        Clear chat
+      </button>
     </div>
+
   </main>
 
 <script>
+  // ───────────── Existing logic (unchanged) ─────────────
   // If frontend is hosted separately, replace this with your Render backend URL.
   // If frontend is served by the same FastAPI app, leave it empty.
   const BACKEND_URL = "";
@@ -65,23 +321,77 @@
   let history = [];
   let busy = false;
 
+  // ───── Helper: build a message row (avatar + bubble) ─────
   function addMessage(text, sender) {
-    const div = document.createElement("div");
-    div.className = "message " + (
-      sender === "user"
-        ? "self-end bg-emerald-500 text-white"
-        : sender === "error"
-          ? "self-start bg-red-50 text-red-700 border border-red-200"
-          : "self-start bg-white text-slate-800 border border-slate-200"
+    const row = document.createElement("div");
+    row.className = "msg-row " + (
+      sender === "user"  ? "user"  :
+      sender === "error" ? "error" : "ai"
+    );
+
+    const avatar = document.createElement("div");
+    if (sender === "user") {
+      avatar.className = "avatar bg-slate-200 text-slate-600";
+      avatar.textContent = "🧑";
+    } else if (sender === "error") {
+      avatar.className = "avatar bg-red-100 text-red-600";
+      avatar.textContent = "⚠️";
+    } else {
+      avatar.className = "avatar bg-rose-100 text-rose-700";
+      avatar.textContent = "🥾";
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "message " + (
+      sender === "user"  ? "msg-user"  :
+      sender === "error" ? "msg-error" : "msg-ai"
     );
 
     // textContent prevents HTML/script injection from messages.
-    div.textContent = sender === "ai" ? "TrekMate: " + text : text;
-    box.appendChild(div);
+    if (sender === "ai") {
+      const label = document.createElement("span");
+      label.className = "font-semibold text-rose-700 mr-1";
+      label.textContent = "TrekMate:";
+      bubble.appendChild(label);
+      bubble.appendChild(document.createTextNode(text));
+    } else {
+      bubble.textContent = text;
+    }
+
+    // Bot / error avatars go on the LEFT of the bubble
+    if (sender === "user") {
+      row.appendChild(bubble);
+      row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+    }
+
+    box.appendChild(row);
     box.scrollTop = box.scrollHeight;
-    return div;
+    return row;
   }
 
+  // ───── Typing indicator (animated 3 dots) ─────
+  function addTypingIndicator() {
+    const row = document.createElement("div");
+    row.className = "msg-row ai";
+    row.id = "typingRow";
+
+    row.innerHTML = `
+      <div class="avatar bg-rose-100 text-rose-700">🥾</div>
+      <div class="message msg-ai">
+        <span class="font-semibold text-rose-700 mr-1">TrekMate:</span>
+        <span class="typing"><span></span><span></span><span></span></span>
+      </div>
+    `;
+
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+    return row;
+  }
+
+  // ───── Form submit handler (existing logic preserved) ─────
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -95,7 +405,7 @@
     addMessage(question, "user");
     input.value = "";
 
-    const loading = addMessage("TrekMate is thinking...", "ai");
+    const loading = addTypingIndicator();
 
     try {
       const response = await fetch(`${BACKEND_URL}/chat`, {
@@ -111,7 +421,7 @@
       loading.remove();
 
       if (!response.ok || !data.answer) {
-        throw new Error(data.detail || data.error || "AI response nahi mila.");
+        throw new Error(data.detail || data.error || "No AI response received.");
       }
 
       addMessage(data.answer, "ai");
@@ -133,10 +443,11 @@
     }
   });
 
+  // ───── Clear chat (existing logic preserved) ─────
   clearBtn.addEventListener("click", () => {
     history = [];
     box.replaceChildren();
-    addMessage("Namaste! Main TrekMate AI hoon. Aapki kya madad kar sakta hoon?", "ai");
+    addMessage("Namaste! I'm TrekMate AI. How can I help you today?", "ai");
   });
 </script>
 </body>
