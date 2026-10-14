@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrekMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-green-600 p-4 text-white text-center text-2xl font-bold">🥾 TrekMate AI</nav>
+    
+    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+        <div id="chat-box" class="h-80 overflow-y-auto mb-4 p-4 border rounded bg-gray-50 flex flex-col gap-2">
+            <!-- Messages will appear here -->
+            <p class="text-gray-500 text-sm">Ask me anything about treks...</p>
+        </div>
+        
+        <div class="flex gap-2">
+            <input type="text" id="user-input" class="flex-1 p-2 border rounded" placeholder="Where do you want to trek?">
+            <button onclick="sendMessage()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const question = input.value;
+            if(!question) return;
+
+            // User Message
+            chatBox.innerHTML += `<div class="self-end bg-green-100 p-2 rounded shadow-sm"><b>You:</b> ${question}</div>`;
+            input.value = '';
+
+            try {
+                // Change this URL after hosting backend on Render
+                const response = await fetch('YOUR_BACKEND_URL/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question: question})
+                });
+                const data = await response.json();
+                chatBox.innerHTML += `<div class="self-start bg-blue-100 p-2 rounded shadow-sm"><b>AI:</b> ${data.answer}</div>`;
+            } catch (error) {
+                chatBox.innerHTML += `<div class="text-red-500">Error connecting to server.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
