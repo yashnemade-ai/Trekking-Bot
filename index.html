@@ -74,6 +74,7 @@
     --chip-text: #166534;
     --toggle-bg: rgba(255,255,255,0.2);
     --toggle-border: rgba(255,255,255,0.4);
+    --skeleton-bg: linear-gradient(90deg, #dcfce7 0%, #bbf7d0 50%, #dcfce7 100%);
   }
 
   [data-theme="dark"] {
@@ -105,6 +106,7 @@
     --chip-text: #bbf7d0;
     --toggle-bg: rgba(255,255,255,0.14);
     --toggle-border: rgba(255,255,255,0.25);
+    --skeleton-bg: linear-gradient(90deg, #0f2818 0%, #166534 50%, #0f2818 100%);
   }
 
   /* ═══════════════════════════════════════════════
@@ -269,7 +271,6 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* User bubble — pure green gradient */
   .msg-user {
     background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
     color: #ffffff;
@@ -278,7 +279,6 @@
     font-weight: 700;
   }
 
-  /* AI bubble */
   .msg-ai {
     background: var(--bubble-ai-bg);
     color: var(--bubble-ai-text);
@@ -350,6 +350,180 @@
     0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
     30%           { transform: translateY(-6px); opacity: 1; }
   }
+
+  /* ═══════════════════════════════════════════════
+     ⭐ UNSPLASH GALLERY
+     ═══════════════════════════════════════════════ */
+  .gallery-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin-bottom: 14px;
+    max-width: 92%;
+    z-index: 1;
+    position: relative;
+  }
+
+  .gallery-card {
+    background: var(--bubble-ai-bg);
+    border: 1px solid var(--bubble-ai-border);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    padding: 10px;
+    box-shadow: var(--bubble-ai-shadow);
+    width: 100%;
+  }
+
+  .gallery-label {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #16a34a;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+  }
+  [data-theme="dark"] .gallery-label { color: #4ade80; }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .img-card {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--chip-bg);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .img-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 22px -6px rgba(22, 163, 74, 0.55);
+    z-index: 2;
+  }
+  .img-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .img-card:hover img { transform: scale(1.08); }
+
+  .img-card::after {
+    content: '🔍';
+    position: absolute;
+    bottom: 6px; right: 6px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+  .img-card:hover::after { opacity: 1; }
+
+  .gallery-credit {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: right;
+    font-weight: 700;
+    opacity: 0.85;
+  }
+  .gallery-credit a {
+    color: #16a34a;
+    text-decoration: none;
+    font-weight: 800;
+  }
+  .gallery-credit a:hover { text-decoration: underline; }
+
+  /* Skeleton loading */
+  .img-skeleton {
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    background: var(--skeleton-bg);
+    background-size: 200% 100%;
+    animation: shimmerSlide 1.5s linear infinite;
+  }
+  @keyframes shimmerSlide {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+  }
+
+  /* ═══════════════════════════════════════════════
+     LIGHTBOX
+     ═══════════════════════════════════════════════ */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: lbIn 0.25s ease-out;
+    padding: 20px;
+    cursor: zoom-out;
+  }
+  @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 85vh;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.9);
+    animation: lbImgIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes lbImgIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .lb-close {
+    position: absolute;
+    top: 20px; right: 24px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+  }
+  .lb-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+
+  .lb-credit {
+    position: absolute;
+    bottom: 24px; left: 0; right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.85);
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .lb-credit a {
+    color: #86efac;
+    text-decoration: none;
+    font-weight: 800;
+  }
+  .lb-credit a:hover { text-decoration: underline; }
 
   /* ═══════════════════════════════════════════════
      INPUT
@@ -626,10 +800,20 @@
 
 <script>
   // ═══════════════════════════════════════════════
+  //  ⭐ UNSPLASH CONFIG
+  //  → Paste your Unsplash Access Key below.
+  //    Get one at: https://unsplash.com/developers
+  //  → Free tier: 50 requests/hour (demo apps)
+  // ═══════════════════════════════════════════════
+  const UNSPLASH_ACCESS_KEY = "PASTE_YOUR_UNSPLASH_ACCESS_KEY_HERE";
+  const UNSPLASH_ENABLED = UNSPLASH_ACCESS_KEY && !UNSPLASH_ACCESS_KEY.startsWith("PASTE_");
+  const IMAGE_COUNT = 4;          // images per gallery
+  const imageCache = new Map();   // query → images[]
+
+  // ═══════════════════════════════════════════════
   //  THEME TOGGLE
   // ═══════════════════════════════════════════════
   const themeToggle = document.getElementById("themeToggle");
-
   themeToggle.addEventListener("click", () => {
     const current = document.documentElement.getAttribute("data-theme") || "light";
     const next = current === "light" ? "dark" : "light";
@@ -668,6 +852,9 @@
   let busy = false;
   let pendingFiles = [];
 
+  // ═══════════════════════════════════════════════
+  //  TEXT HELPERS
+  // ═══════════════════════════════════════════════
   function renderAIText(text) {
     if (!text) return "";
     let s = String(text)
@@ -688,6 +875,14 @@
     ).join("\n");
     s = s.replace(/\n{3,}/g, "\n\n");
     return s.trim();
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function makeAvatar(src) {
@@ -720,6 +915,9 @@
 
   function quickAsk(text) { input.value = text; askAI(); }
 
+  // ═══════════════════════════════════════════════
+  //  MESSAGE RENDERING
+  // ═══════════════════════════════════════════════
   function addMessage(text, sender) {
     const row = document.createElement("div");
     row.className = "msg-row " + (
@@ -798,6 +996,208 @@
     return row;
   }
 
+  // ═══════════════════════════════════════════════
+  //  ⭐ UNSPLASH IMAGE FETCH + GALLERY
+  // ═══════════════════════════════════════════════
+  function buildSearchQuery(question) {
+    let q = String(question)
+      .replace(/tell me about/gi, "")
+      .replace(/information about/gi, "")
+      .replace(/details about/gi, "")
+      .replace(/information/gi, "")
+      .replace(/details/gi, "")
+      .replace(/please/gi, "")
+      .replace(/[?!.]+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    q = q.slice(0, 60);
+
+    // Add trek context if not present
+    if (!/trek|hike|mountain|himalaya|trail|valley|peak/i.test(q)) {
+      q += " trek himalaya";
+    }
+    return q;
+  }
+
+  function isTrekQuery(question) {
+    return /trek|hike|mountain|himalaya|pass|valley|peak|trail|summit|base\s*camp|uttarakhand|himachal|ladakh|sikkim|nepal|kedarkantha|hampta|roopkund|chadar|sandakphu|goechala/i
+      .test(String(question));
+  }
+
+  async function fetchTrekImages(question) {
+    if (!UNSPLASH_ENABLED) return [];
+    if (!isTrekQuery(question)) return [];
+
+    const searchQuery = buildSearchQuery(question);
+    const cacheKey = searchQuery.toLowerCase();
+
+    if (imageCache.has(cacheKey)) return imageCache.get(cacheKey);
+
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=${IMAGE_COUNT}&orientation=landscape&content_filter=high`,
+        { headers: { "Authorization": `Client-ID ${UNSPLASH_ACCESS_KEY}` } }
+      );
+
+      if (!res.ok) {
+        if (res.status === 403 || res.status === 401) {
+          console.warn("Unsplash: invalid key or rate limited");
+        } else if (res.status === 429) {
+          console.warn("Unsplash: rate limit reached (50/hr on free tier)");
+        } else {
+          console.warn("Unsplash error:", res.status);
+        }
+        return [];
+      }
+
+      const data = await res.json();
+      const images = (data.results || []).map(img => ({
+        thumb: img.urls.small,
+        full:  img.urls.regular,
+        alt:   img.alt_description || (img.description || "Trek image"),
+        credit: img.user?.name || "Unsplash",
+        creditLink: (img.user?.links?.html || "https://unsplash.com") +
+          "?utm_source=trekmate&utm_medium=referral"
+      }));
+
+      imageCache.set(cacheKey, images);
+      return images;
+
+    } catch (e) {
+      console.warn("Unsplash fetch failed:", e);
+      return [];
+    }
+  }
+
+  function addGalleryLoader() {
+    const wrap = document.createElement("div");
+    wrap.className = "gallery-wrap";
+    wrap.id = "galleryLoader";
+
+    const avatar = makeAvatar(BOT_AVATAR);
+    const card = document.createElement("div");
+    card.className = "gallery-card";
+
+    let grid = "";
+    for (let i = 0; i < IMAGE_COUNT; i++) {
+      grid += `<div class="img-skeleton"></div>`;
+    }
+
+    card.innerHTML = `
+      <div class="gallery-label">📸 Finding trek visuals...</div>
+      <div class="gallery-grid">${grid}</div>
+    `;
+
+    wrap.appendChild(avatar);
+    wrap.appendChild(card);
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+    return wrap;
+  }
+
+  function removeGalleryLoader() {
+    const g = document.getElementById("galleryLoader");
+    if (g) g.remove();
+  }
+
+  function addImageGallery(images, query) {
+    if (!images || images.length === 0) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "gallery-wrap";
+
+    const avatar = makeAvatar(BOT_AVATAR);
+
+    const card = document.createElement("div");
+    card.className = "gallery-card";
+
+    const label = document.createElement("div");
+    label.className = "gallery-label";
+    label.textContent = "📸 " + (query || "Related trek images");
+    card.appendChild(label);
+
+    const grid = document.createElement("div");
+    grid.className = "gallery-grid";
+
+    images.forEach(img => {
+      const cell = document.createElement("div");
+      cell.className = "img-card";
+      cell.title = img.alt;
+
+      const image = document.createElement("img");
+      image.src = img.thumb;
+      image.alt = img.alt;
+      image.loading = "lazy";
+      image.referrerPolicy = "no-referrer";
+
+      // Fallback: if thumb fails, try full
+      image.onerror = () => {
+        if (image.src !== img.full) image.src = img.full;
+      };
+
+      cell.appendChild(image);
+      cell.addEventListener("click", () =>
+        openLightbox(img.full, img.alt, img.credit, img.creditLink)
+      );
+      grid.appendChild(cell);
+    });
+
+    card.appendChild(grid);
+
+    const credit = document.createElement("div");
+    credit.className = "gallery-credit";
+    credit.innerHTML = `Powered by <a href="https://unsplash.com/?utm_source=trekmate&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a>`;
+    card.appendChild(credit);
+
+    wrap.appendChild(avatar);
+    wrap.appendChild(card);
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function openLightbox(src, alt, credit, creditLink) {
+    const lb = document.createElement("div");
+    lb.className = "lightbox";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt || "Trek image";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "lb-close";
+    closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", "Close");
+
+    const creditEl = document.createElement("div");
+    creditEl.className = "lb-credit";
+    creditEl.innerHTML = `Photo by <a href="${escapeHtml(creditLink)}" target="_blank" rel="noopener">${escapeHtml(credit || "Unsplash")}</a> on Unsplash`;
+
+    lb.appendChild(img);
+    lb.appendChild(closeBtn);
+    lb.appendChild(creditEl);
+    document.body.appendChild(lb);
+
+    const close = () => {
+      lb.style.opacity = "0";
+      setTimeout(() => lb.remove(), 200);
+    };
+
+    lb.addEventListener("click", (e) => {
+      if (e.target === lb || e.target === closeBtn) close();
+    });
+
+    document.addEventListener("keydown", function onEsc(e) {
+      if (e.key === "Escape") {
+        close();
+        document.removeEventListener("keydown", onEsc);
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════
+  //  FILE ATTACHMENTS
+  // ═══════════════════════════════════════════════
   attachBtn.addEventListener("click", () => fileInput.click());
 
   fileInput.addEventListener("change", async (e) => {
@@ -855,6 +1255,9 @@
     });
   }
 
+  // ═══════════════════════════════════════════════
+  //  ASK AI
+  // ═══════════════════════════════════════════════
   async function askAI() {
     const question = input.value.trim();
     const hasMedia = pendingFiles.length > 0;
@@ -880,6 +1283,10 @@
     const backendQuestion = question || "I've shared an image or video with you. Please take a look.";
     const loading = addTypingIndicator();
 
+    // ⭐ Show gallery skeleton (only if trek query + Unsplash enabled)
+    let galleryLoader = null;
+    const shouldFetchImages = UNSPLASH_ENABLED && question && isTrekQuery(question);
+
     try {
       const response = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
@@ -904,8 +1311,22 @@
       );
       history = history.slice(-12);
 
+      // ⭐ Fetch images after AI response (async, non-blocking)
+      if (shouldFetchImages) {
+        galleryLoader = addGalleryLoader();
+        fetchTrekImages(question).then(images => {
+          removeGalleryLoader();
+          if (images && images.length > 0) {
+            addImageGallery(images, buildSearchQuery(question));
+          }
+        }).catch(() => {
+          removeGalleryLoader();
+        });
+      }
+
     } catch (error) {
       loading.remove();
+      removeGalleryLoader();
       addMessage("Error: " + error.message, "error");
     } finally {
       busy = false;
