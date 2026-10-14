@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from google import genai
+from google.genai import types
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -16,12 +17,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Yahan check karein ki Render dashboard mein 'GEMINI_API_KEY' sahi se set hai ya nahi
+# Render dashboard mein GEMINI_API_KEY set hona chahiye
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable set nahi hai!")
+
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+# ✅ Sahi model name
+MODEL_NAME = "gemini-1.5-flash"   # stable, fast, free tier mein available
+
+# ✅ System instruction (optional but recommended)
+SYSTEM_PROMPT = (
+    "You are TrekMate AI, a helpful and knowledgeable trekking assistant. "
+    "You help users with trekking routes, gear, safety tips, weather, "
+    "permits, and best seasons for treks (especially Indian Himalayas). "
+    "Be friendly, concise, and practical. Reply in the same language "
+    "the user writes in (Hindi or English)."
+)
+
 
 class ChatRequest(BaseModel):
     question: str
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -55,10 +74,9 @@ async def home():
                 const q = input.value.trim();
                 if(!q) return;
 
-                // User message
                 box.innerHTML += `<div class="bg-emerald-500 text-white msg self-end shadow-md">${q}</div>`;
                 input.value = '';
-                btn.disabled = True;
+                btn.disabled = true;
                 box.scrollTop = box.scrollHeight;
 
                 try {
@@ -73,7 +91,6 @@ async def home():
                     if (data.answer) {
                         box.innerHTML += `<div class="bg-white text-slate-800 msg self-start border border-slate-200 shadow-sm"><b>TrekMate:</b><br>${data.answer}</div>`;
                     } else {
-                        // Agar 'undefined' aa raha tha, toh ab asli error message dikhayega
                         box.innerHTML += `<div class="bg-red-50 text-red-600 msg self-start border border-red-100 shadow-sm text-xs"><b>Error:</b><br>${data.error || 'Kuch galat hua'}</div>`;
                     }
                 } catch (e) {
@@ -88,22 +105,51 @@ async def home():
     </html>
     """
 
+
 @app.post("/chat")
 async def chat(request: ChatRequest):
     try:
-        # Backend debugging: Render logs mein query dikhegi
         print(f"User Question: {request.question}")
-        
+
+        # ✅ Naya SDK: system instruction config ke through
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=request.question
+            model=MODEL_NAME,
+            contents=request.question,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.7,
+                max_output_tokens=1024,
+            ),
         )
-        
-        if not response.text:
-            return {"error": "AI ne khali response bheja. Shayad API key block hai."}
-            
-        return {"answer": response.text}
+
+        # ✅ Response safely nikaalo
+        text = None
+        try:
+            text = response.text
+        except Exception:
+            # Fallback: candidates se nikaalo
+            if response.candidates and len(response.candidates) > 0:
+                parts = response.candidates[0].content.parts
+                text = "".join(p.text for p in parts if hasattr(p, "text"))
+
+        if not text:
+            return {"error": "AI ne khali response bheja. API key / quota check karein."}
+
+        return {"answer": text}
+
     except Exception as e:
-        # Asli error frontend ko bhej rahe hain
         print(f"ERROR: {str(e)}")
         return {"error": str(e)}
+
+
+@app.get("/health")
+async def health():
+    """Quick test endpoint — browser mein kholo, chalega to API key sahi hai."""
+    try:
+        r = client.models.generate_content(
+            model=MODEL_NAME,
+            contents="Say 'OK' only.",
+        )
+        return {"status": "ok", "model": MODEL_NAME, "reply": r.text}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
