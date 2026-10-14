@@ -507,12 +507,6 @@
     background: var(--footer-bg);
     transition: background 0.35s ease;
   }
-
-  .trek-image-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; width:85%; margin:0 0 14px 44px; }
-  .trek-image-card { overflow:hidden; border:1px solid var(--bubble-ai-border); border-radius:14px; background:var(--bubble-ai-bg); box-shadow:var(--bubble-ai-shadow); }
-  .trek-image-card img { width:100%; height:135px; object-fit:cover; display:block; }
-  .trek-image-card a { color:var(--text-secondary); font-size:11px; display:block; padding:7px; text-decoration:underline; }
-  .trek-image-caption { font-size:12px; padding:0 8px 7px; color:var(--bubble-ai-text); }
 </style>
 </head>
 
@@ -788,39 +782,6 @@
     return row;
   }
 
-  function addTrekImages(images) {
-    if (!Array.isArray(images) || images.length === 0) return;
-    const grid = document.createElement("div");
-    grid.className = "trek-image-grid";
-    images.forEach((item) => {
-      if (!item || !item.url) return;
-      const card = document.createElement("div");
-      card.className = "trek-image-card";
-      const link = document.createElement("a");
-      link.href = item.link || item.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.title = "Open photo source";
-      const img = document.createElement("img");
-      img.src = item.url;
-      img.alt = item.alt || "Trekking photo";
-      img.loading = "lazy";
-      img.onerror = () => card.remove();
-      card.appendChild(img);
-      const caption = document.createElement("div");
-      caption.className = "trek-image-caption";
-      caption.textContent = item.credit ? "Photo: " + item.credit : "Trekking photo";
-      card.appendChild(caption);
-      link.textContent = "View photo source";
-      card.appendChild(link);
-      grid.appendChild(card);
-    });
-    if (grid.children.length) {
-      box.appendChild(grid);
-      box.scrollTop = box.scrollHeight;
-    }
-  }
-
   function addTypingIndicator() {
     const row = document.createElement("div");
     row.className = "msg-row ai";
@@ -937,7 +898,6 @@
       }
 
       addMessage(data.answer, "ai");
-      addTrekImages(data.images);
       history.push(
         { role: "user", content: backendQuestion },
         { role: "assistant", content: data.answer }
