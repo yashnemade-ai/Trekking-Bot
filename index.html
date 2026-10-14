@@ -7,98 +7,155 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<script>
+  // ✅ Default = LIGHT mode always
+  (function() {
+    const saved = localStorage.getItem("trekmate-theme");
+    const theme = saved || "light";
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
 
 <style>
   * { font-family: 'Inter', system-ui, sans-serif; }
 
-  /* ───── Rotating Background Images ───── */
-  #bg-layer {
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    overflow: hidden;
+  /* ═══════════════════════════════════════════════
+     HIDE ALL SCROLLBARS
+     ═══════════════════════════════════════════════ */
+  html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .bg-slide {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0;
-    transition: opacity 2s ease-in-out;
-    will-change: opacity;
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+    background: transparent !important;
   }
-  .bg-slide.active { opacity: 1; }
-
-  #bg-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(135deg,
-      rgba(6, 78, 59, 0.82) 0%,
-      rgba(20, 83, 45, 0.78) 45%,
-      rgba(6, 95, 70, 0.82) 100%);
-    pointer-events: none;
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
-  /* ───── Animated Orbs ───── */
+  /* ═══════════════════════════════════════════════
+     THEME VARIABLES — PURE GREEN
+     ═══════════════════════════════════════════════ */
+  :root,
+  [data-theme="light"] {
+    --page-bg: #f0fdf4;
+    --page-bg-accent: #dcfce7;
+    --card-bg: #ffffff;
+    --card-border: rgba(22, 163, 74, 0.18);
+    --header-bg-start: #14532d;
+    --header-bg-end: #15803d;
+    --chat-bg: #f0fdf4;
+    --text-primary: #14532d;
+    --text-secondary: #15803d;
+    --text-muted: #16a34a;
+    --bubble-ai-bg: #ffffff;
+    --bubble-ai-border: #bbf7d0;
+    --bubble-ai-text: #052e16;
+    --bubble-ai-shadow: 0 10px 24px -6px rgba(22, 163, 74, 0.28), 0 4px 10px -4px rgba(22, 163, 74, 0.18);
+    --bubble-error-bg: #fef2f2;
+    --bubble-error-border: #fecaca;
+    --bubble-error-text: #b91c1c;
+    --input-bg: #dcfce7;
+    --input-bg-focus: #ffffff;
+    --input-text: #14532d;
+    --input-placeholder: #4ade80;
+    --footer-bg: #ffffff;
+    --footer-text: #15803d;
+    --chip-bg: #ffffff;
+    --chip-border: #bbf7d0;
+    --chip-text: #166534;
+    --toggle-bg: rgba(255,255,255,0.2);
+    --toggle-border: rgba(255,255,255,0.4);
+  }
+
+  [data-theme="dark"] {
+    --page-bg: #041206;
+    --page-bg-accent: #0a2010;
+    --card-bg: #0a1f0f;
+    --card-border: rgba(22, 163, 74, 0.3);
+    --header-bg-start: #052e16;
+    --header-bg-end: #15803d;
+    --chat-bg: #041206;
+    --text-primary: #dcfce7;
+    --text-secondary: #86efac;
+    --text-muted: #4ade80;
+    --bubble-ai-bg: #0f2818;
+    --bubble-ai-border: #166534;
+    --bubble-ai-text: #dcfce7;
+    --bubble-ai-shadow: 0 10px 24px -6px rgba(0,0,0,0.7), 0 4px 10px -4px rgba(0,0,0,0.5);
+    --bubble-error-bg: #450a0a;
+    --bubble-error-border: #7f1d1d;
+    --bubble-error-text: #fca5a5;
+    --input-bg: #0f2818;
+    --input-bg-focus: #0f2818;
+    --input-text: #dcfce7;
+    --input-placeholder: #4ade80;
+    --footer-bg: #0a1f0f;
+    --footer-text: #86efac;
+    --chip-bg: #0f2818;
+    --chip-border: #166534;
+    --chip-text: #bbf7d0;
+    --toggle-bg: rgba(255,255,255,0.14);
+    --toggle-border: rgba(255,255,255,0.25);
+  }
+
+  /* ═══════════════════════════════════════════════
+     PAGE
+     ═══════════════════════════════════════════════ */
   body {
     min-height: 100vh;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+    transition: background 0.35s ease, color 0.35s ease;
     position: relative;
     overflow-x: hidden;
-    background: #064e3b;
   }
-  body::before, body::after {
+
+  body::before {
     content: '';
     position: fixed;
+    width: 600px;
+    height: 600px;
     border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.4;
+    background: radial-gradient(circle, rgba(22,163,74,0.18), transparent 70%);
+    top: -220px;
+    left: -220px;
     z-index: 0;
     pointer-events: none;
+    filter: blur(60px);
+    transition: opacity 0.35s ease;
   }
-  body::before {
-    width: 450px; height: 450px;
-    background: #22c55e;
-    top: -120px; left: -120px;
-    animation: float1 14s ease-in-out infinite;
-  }
-  body::after {
-    width: 550px; height: 550px;
-    background: #14b8a6;
-    bottom: -180px; right: -180px;
-    animation: float2 18s ease-in-out infinite;
-  }
-  @keyframes float1 {
-    0%,100% { transform: translate(0,0) scale(1); }
-    50%     { transform: translate(70px, 60px) scale(1.1); }
-  }
-  @keyframes float2 {
-    0%,100% { transform: translate(0,0) scale(1); }
-    50%     { transform: translate(-90px, -70px) scale(1.05); }
+  [data-theme="dark"] body::before {
+    background: radial-gradient(circle, rgba(22,163,74,0.22), transparent 70%);
   }
 
-  /* ───── Glass Card ───── */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.97);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+  /* ═══════════════════════════════════════════════
+     CARD
+     ═══════════════════════════════════════════════ */
+  .app-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    transition: background 0.35s ease, border-color 0.35s ease;
   }
 
-  /* ───── Header Mountain Theme ───── */
+  /* ═══════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════ */
   .trek-header {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(180deg,
-      #0f2f1f 0%,
-      #14532d 45%,
-      #166534 75%,
-      #15803d 100%);
+    background: linear-gradient(180deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%);
+    transition: background 0.35s ease;
   }
-
-  /* Stars */
   .trek-header .stars {
     position: absolute;
     inset: 0;
@@ -111,91 +168,86 @@
       radial-gradient(1px 1px at 88% 10%, rgba(255,255,255,0.7), transparent 50%),
       radial-gradient(1.2px 1.2px at 35% 30%, rgba(255,255,255,0.6), transparent 50%),
       radial-gradient(1px 1px at 55% 28%, rgba(255,255,255,0.65), transparent 50%);
-    opacity: 0.9;
+    opacity: 0.75;
     animation: twinkle 4s ease-in-out infinite alternate;
+    pointer-events: none;
   }
-  @keyframes twinkle {
-    from { opacity: 0.55; }
-    to   { opacity: 1; }
-  }
+  @keyframes twinkle { from{opacity:0.45;} to{opacity:0.9;} }
 
-  /* Moon */
-  .trek-header .moon {
-    position: absolute;
-    top: 14px; right: 22px;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #fff8e1, #fde68a 70%);
-    box-shadow:
-      0 0 20px rgba(253, 224, 71, 0.55),
-      0 0 40px rgba(253, 224, 71, 0.3),
-      inset -5px -4px 0 -1px rgba(0,0,0,0.06);
-    animation: glowMoon 5s ease-in-out infinite alternate;
-  }
-  @keyframes glowMoon {
-    from { box-shadow: 0 0 15px rgba(253,224,71,0.45), 0 0 30px rgba(253,224,71,0.2); }
-    to   { box-shadow: 0 0 25px rgba(253,224,71,0.7), 0 0 55px rgba(253,224,71,0.4); }
-  }
-
-  /* Mountain silhouettes (3 layers) */
   .trek-header .mountains {
     position: absolute;
     left: 0; right: 0; bottom: 0;
-    height: 60%;
+    height: 55%;
     pointer-events: none;
   }
   .trek-header .mountains svg {
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 100%;
   }
-
-  /* Fog / haze at bottom of mountains */
   .trek-header .fog {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 40px;
-    background: linear-gradient(to top,
-      rgba(255,255,255,0.08), transparent);
+    position: absolute; left: 0; right: 0; bottom: 0; height: 30px;
+    background: linear-gradient(to top, rgba(255,255,255,0.06), transparent);
     pointer-events: none;
   }
+  .trek-header .header-content { position: relative; z-index: 5; }
 
-  /* Content sits above mountains */
-  .trek-header .header-content {
-    position: relative;
-    z-index: 5;
-  }
-
-  /* ───── Header Logo Image ───── */
   .logo-img {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    object-fit: cover;
+    width: 46px; height: 46px;
+    border-radius: 14px; object-fit: cover;
     box-shadow: 0 6px 14px -4px rgba(0,0,0,0.5);
-    border: 2px solid rgba(255,255,255,0.6);
-    background: #fff;
-    flex-shrink: 0;
-    z-index: 6;
-    position: relative;
+    border: 2px solid rgba(255,255,255,0.7);
+    background: #fff; flex-shrink: 0;
+    z-index: 6; position: relative;
   }
 
-  /* ───── Chat Window ───── */
+  /* ═══════════════════════════════════════════════
+     THEME TOGGLE
+     ═══════════════════════════════════════════════ */
+  .theme-toggle {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    backdrop-filter: blur(10px);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 6;
+  }
+  .theme-toggle:hover {
+    transform: translateY(-2px) rotate(-8deg);
+    background: rgba(255,255,255,0.3);
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.4);
+  }
+  .theme-toggle:active { transform: scale(0.94); }
+  .theme-toggle svg { width: 20px; height: 20px; }
+  .theme-toggle .icon-sun  { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  [data-theme="dark"] .theme-toggle .icon-sun  { display: block; color: #fde68a; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+  /* ═══════════════════════════════════════════════
+     CHAT WINDOW
+     ═══════════════════════════════════════════════ */
   .chat-window {
     height: 62vh;
     min-height: 320px;
     max-height: 600px;
     scroll-behavior: smooth;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--chat-bg);
+    transition: background 0.35s ease;
   }
-  .chat-window::-webkit-scrollbar { width: 6px; }
-  .chat-window::-webkit-scrollbar-track { background: transparent; }
-  .chat-window::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-  }
-  .chat-window::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-  /* ───── Messages ───── */
+  /* ═══════════════════════════════════════════════
+     MESSAGES (all bold)
+     ═══════════════════════════════════════════════ */
   .message {
     max-width: 85%;
     padding: 12px 16px;
@@ -204,92 +256,93 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     font-size: 14.5px;
-    line-height: 1.55;
+    line-height: 1.6;
+    font-weight: 700;
     animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 8px -2px rgba(0,0,0,0.05);
     position: relative;
+    text-align: left;
+    z-index: 1;
+    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
   }
   @keyframes msgIn {
     from { opacity: 0; transform: translateY(14px) scale(0.95); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  /* User bubble — pure green gradient */
   .msg-user {
-    background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
-    color: white;
+    background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+    color: #ffffff;
     border-bottom-right-radius: 6px;
-    box-shadow: 0 8px 20px -6px rgba(16, 185, 129, 0.55);
+    box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.6);
+    font-weight: 700;
   }
+
+  /* AI bubble */
   .msg-ai {
-    background: #ffffff;
-    color: #1e293b;
-    border: 1px solid #e2e8f0;
+    background: var(--bubble-ai-bg);
+    color: var(--bubble-ai-text);
+    border: 1px solid var(--bubble-ai-border);
     border-bottom-left-radius: 6px;
-    box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--bubble-ai-shadow);
   }
+
   .msg-error {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+    background: var(--bubble-error-bg);
+    color: var(--bubble-error-text);
+    border: 1px solid var(--bubble-error-border);
     border-bottom-left-radius: 6px;
+    box-shadow: 0 8px 20px -6px rgba(220,38,38,0.25);
   }
 
-  /* Media bubbles */
+  .msg-ai strong {
+    font-weight: 900;
+    color: #15803d;
+  }
+  .msg-user strong { font-weight: 900; color: #fff; }
+
+  [data-theme="dark"] .msg-ai strong { color: #86efac; }
+
   .msg-media {
-    max-width: 85%;
-    margin-bottom: 14px;
-    border-radius: 18px;
-    overflow: hidden;
+    max-width: 85%; margin-bottom: 14px;
+    border-radius: 18px; overflow: hidden;
     animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.15);
+    box-shadow: 0 4px 14px -4px rgba(22,163,74,0.35);
+    position: relative; z-index: 1;
   }
-  .msg-media img,
-  .msg-media video {
-    display: block;
-    max-width: 100%;
-    max-height: 320px;
-    object-fit: cover;
-    border-radius: 18px;
+  .msg-media img, .msg-media video {
+    display: block; max-width: 100%; max-height: 320px;
+    object-fit: cover; border-radius: 18px;
   }
 
-  /* ───── Message Row ───── */
   .msg-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
+    display: flex; align-items: flex-end; gap: 10px;
     animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative; z-index: 1;
   }
   .msg-row.user { justify-content: flex-end; }
-  .msg-row.ai,
-  .msg-row.error { justify-content: flex-start; }
+  .msg-row.ai, .msg-row.error { justify-content: flex-start; }
 
   .avatar {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    overflow: hidden;
-    box-shadow: 0 3px 8px -2px rgba(0,0,0,0.15);
-    background: #fff;
-    border: 1.5px solid rgba(255,255,255,0.9);
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    overflow: hidden; box-shadow: 0 3px 8px -2px rgba(22,163,74,0.4);
+    background: #fff; border: 1.5px solid #bbf7d0;
   }
-  .avatar img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* ───── Typing Indicator ───── */
-  .typing {
-    display: inline-flex;
-    gap: 5px;
-    padding: 4px 2px;
-    align-items: center;
+  .ai-label {
+    color: #16a34a;
+    font-weight: 900;
   }
+  [data-theme="dark"] .ai-label { color: #4ade80; }
+
+  /* ═══════════════════════════════════════════════
+     TYPING
+     ═══════════════════════════════════════════════ */
+  .typing { display: inline-flex; gap: 5px; padding: 4px 2px; align-items: center; }
   .typing span {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #94a3b8;
-    animation: bounce 1.4s infinite;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #22c55e; animation: bounce 1.4s infinite;
   }
   .typing span:nth-child(2) { animation-delay: 0.2s; }
   .typing span:nth-child(3) { animation-delay: 0.4s; }
@@ -298,85 +351,79 @@
     30%           { transform: translateY(-6px); opacity: 1; }
   }
 
-  /* ───── Input ───── */
+  /* ═══════════════════════════════════════════════
+     INPUT
+     ═══════════════════════════════════════════════ */
+  .input-wrap {
+    background: var(--input-bg);
+    transition: background 0.35s ease, box-shadow 0.2s ease;
+  }
   .input-wrap:focus-within {
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
-    background: #fff;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.28);
+    background: var(--input-bg-focus);
+  }
+  .input-wrap input {
+    color: var(--input-text);
+    font-weight: 700;
+  }
+  .input-wrap input::placeholder {
+    color: var(--input-placeholder);
+    font-weight: 600;
   }
 
   .attach-btn {
     transition: all 0.2s ease;
     flex-shrink: 0;
-  }
-  .attach-btn:hover {
-    background: #dcfce7;
     color: #16a34a;
   }
+  .attach-btn:hover {
+    background: rgba(22,163,74,0.15);
+    color: #15803d;
+  }
 
-  /* ───── Send Button ───── */
+  /* Send button — pure green */
   .send-btn {
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
   }
   .send-btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px -8px rgba(16, 185, 129, 0.8);
+    box-shadow: 0 10px 22px -8px rgba(22,163,74,0.9);
   }
   .send-btn:active:not(:disabled) { transform: translateY(0) scale(0.96); }
   .send-btn:disabled { opacity: 0.6; cursor: wait; }
 
-  /* ───── Preview Strip ───── */
-  #previewStrip {
-    display: none;
-  }
-  #previewStrip.show {
-    display: flex;
-  }
+  /* ═══════════════════════════════════════════════
+     PREVIEW STRIP
+     ═══════════════════════════════════════════════ */
+  #previewStrip { display: none; background: var(--footer-bg); }
+  #previewStrip.show { display: flex; }
   .preview-thumb {
-    position: relative;
-    width: 68px; height: 68px;
-    border-radius: 12px;
-    overflow: hidden;
+    position: relative; width: 68px; height: 68px;
+    border-radius: 12px; overflow: hidden;
     border: 2px solid #16a34a;
-    box-shadow: 0 4px 10px -2px rgba(16, 185, 129, 0.4);
-    background: #f8fafc;
+    box-shadow: 0 4px 10px -2px rgba(22,163,74,0.45);
+    background: #f0fdf4;
   }
-  .preview-thumb img,
-  .preview-thumb video {
-    width: 100%; height: 100%;
-    object-fit: cover;
-  }
+  .preview-thumb img, .preview-thumb video { width: 100%; height: 100%; object-fit: cover; }
   .preview-remove {
-    position: absolute;
-    top: -6px; right: -6px;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: #ef4444;
-    color: white;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 6px -1px rgba(0,0,0,0.3);
-    border: 2px solid white;
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+    border-radius: 50%; background: #dc2626; color: white; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: 0 2px 6px -1px rgba(0,0,0,0.3); border: 2px solid white;
   }
-  .preview-remove:hover { background: #dc2626; }
+  .preview-remove:hover { background: #b91c1c; }
 
-  /* ───── Status dot (green, trekking) ───── */
+  /* ═══════════════════════════════════════════════
+     STATUS DOT — green
+     ═══════════════════════════════════════════════ */
   .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #4ade80;
-    position: relative;
-    flex-shrink: 0;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #86efac; position: relative; flex-shrink: 0;
   }
   .status-dot::after {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    background: #4ade80;
-    opacity: 0.6;
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    background: #86efac; opacity: 0.7;
     animation: pulseDot 1.8s ease-out infinite;
   }
   @keyframes pulseDot {
@@ -384,149 +431,157 @@
     100% { transform: scale(2.2); opacity: 0; }
   }
 
-  /* ───── Clear button ───── */
-  .clear-btn { transition: all 0.2s ease; }
+  /* ═══════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════ */
+  .app-footer {
+    background: var(--footer-bg);
+    color: var(--footer-text);
+    font-weight: 700;
+    transition: background 0.35s ease, color 0.35s ease;
+  }
+  .clear-btn {
+    transition: all 0.2s ease;
+    color: var(--footer-text);
+    font-weight: 800;
+  }
   .clear-btn:hover {
-    color: #16a34a;
-    background: #dcfce7;
+    color: #ffffff;
+    background: #16a34a;
   }
 
-  /* ───── Title text shadow (readable on mountains) ───── */
+  /* ═══════════════════════════════════════════════
+     HEADER TEXT
+     ═══════════════════════════════════════════════ */
   .trek-title {
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+    color: #ffffff;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.45);
   }
   .trek-sub {
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    color: #dcfce7;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.55);
   }
-
-  /* ───── Badge (Adventure Awaits) ───── */
+  .trek-sub .subtitle {
+    font-weight: 800;
+    letter-spacing: 0.01em;
+  }
   .trek-badge {
-    background: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.18);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.3);
     box-shadow: 0 4px 12px -4px rgba(0,0,0,0.3);
+    color: #ffffff;
+    font-weight: 800;
   }
 
-  /* ───── Suggestion Chips ───── */
+  /* ═══════════════════════════════════════════════
+     CHIPS
+     ═══════════════════════════════════════════════ */
   .chip {
     transition: all 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
+    position: relative;
+    z-index: 1;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    color: var(--chip-text);
+    font-weight: 700;
+    backdrop-filter: blur(6px);
   }
   .chip:hover {
     transform: translateY(-2px);
-    background: #dcfce7;
+    background: #16a34a;
     border-color: #16a34a;
-    color: #15803d;
+    color: #ffffff;
+  }
+
+  /* ═══════════════════════════════════════════════
+     FORM AREA
+     ═══════════════════════════════════════════════ */
+  .form-area {
+    background: var(--footer-bg);
+    transition: background 0.35s ease;
   }
 </style>
 </head>
 
 <body class="flex items-center justify-center p-3 sm:p-5">
 
-  <!-- ═══ Rotating Backgrounds ═══ -->
-  <div id="bg-layer">
-    <div class="bg-slide active"
-         style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4iFGYKCxmclbndrMe4BKh1rANgHEH2-7L_coHJhJOjg&s=10');"></div>
-    <div class="bg-slide"
-         style="background-image: url('https://plus.unsplash.com/premium_photo-1661883853185-165f5869e6d3?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D');"></div>
-  </div>
-  <div id="bg-overlay"></div>
+  <main class="w-full max-w-3xl app-card rounded-3xl shadow-2xl overflow-hidden relative z-10 mt-2 sm:mt-4">
 
-  <main class="w-full max-w-3xl glass-card rounded-3xl shadow-2xl overflow-hidden relative z-10 mt-2 sm:mt-4">
-
-    <!-- ═══ Trekking Header ═══ -->
-    <header class="trek-header p-5 text-white">
-
-      <!-- Stars -->
+    <!-- ═══ Header ═══ -->
+    <header class="trek-header p-5">
       <div class="stars"></div>
 
-      <!-- Moon -->
-      <div class="moon"></div>
-
-      <!-- Mountain silhouettes -->
       <div class="mountains">
         <svg viewBox="0 0 800 120" preserveAspectRatio="none" style="z-index:1;">
-          <path d="M0,120 L0,70 L60,45 L130,72 L200,32 L280,68 L360,25 L440,70 L520,38 L600,72 L680,42 L750,68 L800,50 L800,120 Z"
-                fill="#0a2e1b"/>
+          <path d="M0,120 L0,70 L60,45 L130,72 L200,32 L280,68 L360,25 L440,70 L520,38 L600,72 L680,42 L750,68 L800,50 L800,120 Z" fill="rgba(0,0,0,0.35)"/>
         </svg>
         <svg viewBox="0 0 800 120" preserveAspectRatio="none" style="z-index:2;">
-          <path d="M0,120 L0,85 L90,55 L170,88 L260,48 L340,82 L430,52 L520,90 L610,58 L700,88 L780,62 L800,78 L800,120 Z"
-                fill="#0d3b24"/>
+          <path d="M0,120 L0,85 L90,55 L170,88 L260,48 L340,82 L430,52 L520,90 L610,58 L700,88 L780,62 L800,78 L800,120 Z" fill="rgba(0,0,0,0.28)"/>
         </svg>
         <svg viewBox="0 0 800 120" preserveAspectRatio="none" style="z-index:3;">
-          <path d="M0,120 L0,95 L70,70 L120,88 L200,55 L280,90 L320,80 L360,100 L360,120 Z"
-                fill="#114a2e"/>
-          <path d="M180,63 L200,55 L220,64 L210,68 L200,66 L190,68 Z" fill="#e7f5ea" opacity="0.9"/>
-          <path d="M380,120 L420,85 L480,60 L540,88 L620,50 L700,82 L760,68 L800,85 L800,120 Z"
-                fill="#114a2e"/>
-          <path d="M600,58 L620,50 L640,60 L632,63 L620,60 L610,63 Z" fill="#e7f5ea" opacity="0.9"/>
+          <path d="M0,120 L0,95 L70,70 L120,88 L200,55 L280,90 L320,80 L360,100 L360,120 Z" fill="rgba(0,0,0,0.22)"/>
+          <path d="M180,63 L200,55 L220,64 L210,68 L200,66 L190,68 Z" fill="rgba(255,255,255,0.7)"/>
+          <path d="M380,120 L420,85 L480,60 L540,88 L620,50 L700,82 L760,68 L800,85 L800,120 Z" fill="rgba(0,0,0,0.22)"/>
+          <path d="M600,58 L620,50 L640,60 L632,63 L620,60 L610,63 Z" fill="rgba(255,255,255,0.7)"/>
         </svg>
       </div>
 
       <div class="fog"></div>
 
-      <!-- Header content -->
       <div class="header-content flex items-center gap-3">
-        <!-- Logo image -->
         <img src="https://static.vecteezy.com/system/resources/thumbnails/049/855/235/small/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-photo.jpg"
-             alt="TrekMate Logo"
-             class="logo-img">
+             alt="TrekMate Logo" class="logo-img">
 
         <div class="flex-1 min-w-0">
-          <h1 class="trek-title text-xl sm:text-2xl font-bold tracking-tight">TrekMate AI</h1>
-          <div class="trek-sub flex items-center gap-2 text-xs text-emerald-50 mt-1">
+          <h1 class="trek-title text-xl sm:text-2xl tracking-tight">TrekMate AI</h1>
+          <div class="trek-sub flex items-center gap-2 text-xs mt-1">
             <span class="status-dot"></span>
-            <span class="font-medium">Online</span>
-            <span class="opacity-60">•</span>
-            <span>Your personal trekking assistant</span>
+            <span class="font-extrabold">Online</span>
+            <span class="opacity-70">•</span>
+            <span class="subtitle">Your personal trekking assistant</span>
           </div>
         </div>
 
-        <div class="hidden sm:flex items-center gap-2 text-xs trek-badge rounded-full px-3 py-1.5 text-emerald-50">
-          <span>⛰️</span><span class="font-medium">Adventure Awaits</span>
-        </div>
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle dark / light mode">
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+        </button>
       </div>
     </header>
 
     <!-- ═══ Chat Window ═══ -->
     <div id="chatWindow"
-         class="chat-window overflow-y-auto p-4 sm:p-5 bg-gradient-to-b from-slate-50 to-white flex flex-col"
-         aria-live="polite">
-
-      <!-- Welcome message -->
-      <div class="msg-row ai">
-        <div class="avatar">
-          <img src="https://cdn.magicdecor.in/com/2023/02/29234001/image-1682163782-1982.jpg" alt="TrekMate">
-        </div>
-        <div class="message msg-ai">
-          Namaste! 🙏 Welcome to TrekMate AI.<br><br>
-          Which trekking point would you like to know about? Or where do you want to go today? 🏔️
-        </div>
-      </div>
-
-      <!-- Suggestion chips -->
-      <div id="suggestions" class="flex flex-wrap gap-2 mb-4 ml-11">
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Tell me about Kedarkantha trek')">Kedarkantha</div>
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Tell me about Hampta Pass trek')">Hampta Pass</div>
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Best trek for beginners in Himalayas')">Beginner Treks</div>
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Valley of Flowers trek details')">Valley of Flowers</div>
-      </div>
-    </div>
+         class="chat-window p-4 sm:p-5 flex flex-col"
+         aria-live="polite"></div>
 
     <!-- ═══ Preview Strip ═══ -->
-    <div id="previewStrip" class="px-4 pt-3 pb-1 gap-2 bg-white border-t border-slate-100"></div>
+    <div id="previewStrip" class="px-4 pt-3 pb-1 gap-2 border-t border-green-200/40"></div>
 
     <!-- ═══ Input Form ═══ -->
-    <form id="chatForm" class="p-3 sm:p-4 bg-white">
-      <div class="input-wrap flex items-center gap-2 bg-slate-100 rounded-full p-1.5 pl-2 transition-all duration-200">
+    <form id="chatForm" class="p-3 sm:p-4 form-area">
+      <div class="input-wrap flex items-center gap-2 rounded-full p-1.5 pl-2">
 
         <button type="button" id="attachBtn"
-                class="attach-btn w-10 h-10 rounded-full flex items-center justify-center text-slate-500"
+                class="attach-btn w-10 h-10 rounded-full flex items-center justify-center"
                 title="Attach photo or video">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"
                stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
           </svg>
@@ -534,13 +589,13 @@
         <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
 
         <input id="userInput" type="text" maxlength="10000"
-               class="flex-1 min-w-0 bg-transparent py-2.5 text-slate-700 placeholder-slate-400 text-[15px] outline-none"
+               class="flex-1 min-w-0 bg-transparent py-2.5 text-[15px] outline-none"
                placeholder="Ask about any trek..." autocomplete="off">
 
         <button id="sendBtn" type="submit"
-                class="send-btn bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 flex-shrink-0">
+                class="send-btn text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg shadow-green-500/40 flex-shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.3"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"
                stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -551,10 +606,10 @@
     </form>
 
     <!-- ═══ Footer ═══ -->
-    <div class="px-5 pb-4 pt-1 flex items-center justify-between text-[11.5px] text-slate-500 bg-white">
+    <div class="px-5 pb-4 pt-1 flex items-center justify-between text-[11.5px] app-footer">
       <span class="flex items-center gap-1.5">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -562,7 +617,7 @@
         AI-generated guidance; verify local safety conditions.
       </span>
       <button id="clearBtn" type="button"
-              class="clear-btn px-3 py-1 rounded-full text-slate-500 font-medium">
+              class="clear-btn px-3 py-1 rounded-full">
         Clear chat
       </button>
     </div>
@@ -570,24 +625,35 @@
   </main>
 
 <script>
-  // ───────────── Image URLs (single source) ─────────────
+  // ═══════════════════════════════════════════════
+  //  THEME TOGGLE
+  // ═══════════════════════════════════════════════
+  const themeToggle = document.getElementById("themeToggle");
+
+  themeToggle.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") || "light";
+    const next = current === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("trekmate-theme", next);
+  });
+
+  // ═══════════════════════════════════════════════
+  //  CONFIG
+  // ═══════════════════════════════════════════════
+  const BACKEND_URL = "";
   const BOT_AVATAR  = "https://cdn.magicdecor.in/com/2023/02/29234001/image-1682163782-1982.jpg";
   const USER_AVATAR = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKD4RQPtnIB14IkBIkgY_HXeHgRwKSwkC1gbLY_QbIA&s=10";
 
-  // ───────────── Rotating Backgrounds (every 2 min) ─────────────
-  (function initBackgroundSlideshow() {
-    const slides = document.querySelectorAll(".bg-slide");
-    if (slides.length < 2) return;
-    let current = 0;
-    const ROTATE_MS = 2 * 60 * 1000;
-    setInterval(() => {
-      slides[current].classList.remove("active");
-      current = (current + 1) % slides.length;
-      slides[current].classList.add("active");
-    }, ROTATE_MS);
-  })();
+  const WELCOME_TEXT =
+    "Namaste! 🙏 Welcome to TrekMate AI.\n" +
+    "Which trekking point would you like to know about? Or where do you want to go today? 🏔️";
 
-  const BACKEND_URL = "";
+  const SUGGESTIONS = [
+    { label: "Kedarkantha",       q: "Tell me about Kedarkantha trek" },
+    { label: "Hampta Pass",       q: "Tell me about Hampta Pass trek" },
+    { label: "Beginner Treks",    q: "Best trek for beginners in Himalayas" },
+    { label: "Valley of Flowers", q: "Valley of Flowers trek details" }
+  ];
 
   const form = document.getElementById("chatForm");
   const input = document.getElementById("userInput");
@@ -597,36 +663,62 @@
   const attachBtn = document.getElementById("attachBtn");
   const fileInput = document.getElementById("fileInput");
   const previewStrip = document.getElementById("previewStrip");
-  const suggestions = document.getElementById("suggestions");
 
   let history = [];
   let busy = false;
   let pendingFiles = [];
 
-  function stripMarkdown(text) {
+  function renderAIText(text) {
     if (!text) return "";
-    return text
-      .replace(/^#{1,6}\s+/gm, "")
-      .replace(/\*\*(.+?)\*\*/g, "$1")
-      .replace(/\*(.+?)\*/g, "$1")
-      .replace(/__(.+?)__/g, "$1")
-      .replace(/_(.+?)_/g, "$1")
-      .replace(/```[\s\S]*?```/g, "")
-      .replace(/`(.+?)`/g, "$1")
-      .replace(/^\s*[-*+]\s+/gm, "• ")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+    let s = String(text)
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    s = s.replace(/```[\s\S]*?```/g, "");
+    s = s.replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/^[ \t]*#{1,6}[ \t]+(.+?)[ \t]*$/gm, "<strong>$1</strong>");
+    s = s.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1$2");
+    s = s.replace(/(^|[\s(])_([^_\n]+?)_(?=[\s).,!?:;]|$)/gm, "$1$2");
+    s = s.replace(/`([^`\n]+)`/g, "$1");
+    s = s.replace(/^[ \t]*[-*+][ \t]+/gm, "• ");
+    s = s.split("\n").map(line =>
+      line.replace(/^[ \t]+/, "").replace(/[ \t]+$/, "")
+    ).join("\n");
+    s = s.replace(/\n{3,}/g, "\n\n");
+    return s.trim();
   }
 
   function makeAvatar(src) {
     const a = document.createElement("div");
     a.className = "avatar";
     const img = document.createElement("img");
-    img.src = src;
-    img.alt = "avatar";
+    img.src = src; img.alt = "avatar";
     a.appendChild(img);
     return a;
   }
+
+  function removeSuggestions() {
+    const s = document.getElementById("suggestions");
+    if (s) s.remove();
+  }
+
+  function renderSuggestions() {
+    const wrap = document.createElement("div");
+    wrap.id = "suggestions";
+    wrap.className = "flex flex-wrap gap-2 mb-4 ml-11";
+    SUGGESTIONS.forEach(item => {
+      const chip = document.createElement("div");
+      chip.className = "chip text-xs px-3 py-1.5 rounded-full shadow-sm";
+      chip.textContent = item.label;
+      chip.addEventListener("click", () => quickAsk(item.q));
+      wrap.appendChild(chip);
+    });
+    return wrap;
+  }
+
+  function quickAsk(text) { input.value = text; askAI(); }
 
   function addMessage(text, sender) {
     const row = document.createElement("div");
@@ -636,7 +728,6 @@
     );
 
     const avatar = makeAvatar(sender === "user" ? USER_AVATAR : BOT_AVATAR);
-
     const bubble = document.createElement("div");
     bubble.className = "message " + (
       sender === "user"  ? "msg-user"  :
@@ -645,20 +736,20 @@
 
     if (sender === "ai") {
       const label = document.createElement("span");
-      label.className = "font-semibold text-emerald-700 mr-1";
+      label.className = "ai-label mr-1";
       label.textContent = "TrekMate:";
+      const content = document.createElement("span");
+      content.innerHTML = renderAIText(text);
       bubble.appendChild(label);
-      bubble.appendChild(document.createTextNode(stripMarkdown(text)));
+      bubble.appendChild(content);
     } else {
       bubble.textContent = text;
     }
 
     if (sender === "user") {
-      row.appendChild(bubble);
-      row.appendChild(avatar);
+      row.appendChild(bubble); row.appendChild(avatar);
     } else {
-      row.appendChild(avatar);
-      row.appendChild(bubble);
+      row.appendChild(avatar); row.appendChild(bubble);
     }
 
     box.appendChild(row);
@@ -669,32 +760,22 @@
   function addMediaMessage(dataUrl, type, sender = "user") {
     const row = document.createElement("div");
     row.className = "msg-row " + sender;
-
     const avatar = makeAvatar(sender === "user" ? USER_AVATAR : BOT_AVATAR);
-
     const mediaWrap = document.createElement("div");
     mediaWrap.className = "msg-media";
 
     if (type.startsWith("video")) {
       const v = document.createElement("video");
-      v.src = dataUrl;
-      v.controls = true;
-      v.muted = true;
+      v.src = dataUrl; v.controls = true; v.muted = true;
       mediaWrap.appendChild(v);
     } else {
       const img = document.createElement("img");
-      img.src = dataUrl;
-      img.alt = "attachment";
+      img.src = dataUrl; img.alt = "attachment";
       mediaWrap.appendChild(img);
     }
 
-    if (sender === "user") {
-      row.appendChild(mediaWrap);
-      row.appendChild(avatar);
-    } else {
-      row.appendChild(avatar);
-      row.appendChild(mediaWrap);
-    }
+    if (sender === "user") { row.appendChild(mediaWrap); row.appendChild(avatar); }
+    else { row.appendChild(avatar); row.appendChild(mediaWrap); }
 
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
@@ -705,29 +786,16 @@
     const row = document.createElement("div");
     row.className = "msg-row ai";
     row.id = "typingRow";
-
     const avatar = makeAvatar(BOT_AVATAR);
     const bubble = document.createElement("div");
     bubble.className = "message msg-ai";
-    bubble.innerHTML = `
-      <span class="font-semibold text-emerald-700 mr-1">TrekMate:</span>
-      <span class="typing"><span></span><span></span><span></span></span>
-    `;
-
-    row.appendChild(avatar);
-    row.appendChild(bubble);
+    bubble.innerHTML =
+      '<span class="ai-label mr-1">TrekMate:</span>' +
+      '<span class="typing"><span></span><span></span><span></span></span>';
+    row.appendChild(avatar); row.appendChild(bubble);
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
     return row;
-  }
-
-  function removeSuggestions() {
-    if (suggestions && suggestions.parentNode) suggestions.remove();
-  }
-
-  function quickAsk(text) {
-    input.value = text;
-    askAI();
   }
 
   attachBtn.addEventListener("click", () => fileInput.click());
@@ -758,10 +826,7 @@
 
   function renderPreviewStrip() {
     previewStrip.replaceChildren();
-    if (pendingFiles.length === 0) {
-      previewStrip.classList.remove("show");
-      return;
-    }
+    if (pendingFiles.length === 0) { previewStrip.classList.remove("show"); return; }
     previewStrip.classList.add("show");
 
     pendingFiles.forEach((item, idx) => {
@@ -770,26 +835,22 @@
 
       if (item.type.startsWith("video")) {
         const v = document.createElement("video");
-        v.src = item.dataUrl;
-        v.muted = true;
+        v.src = item.dataUrl; v.muted = true;
         wrap.appendChild(v);
       } else {
         const img = document.createElement("img");
-        img.src = item.dataUrl;
-        img.alt = "preview";
+        img.src = item.dataUrl; img.alt = "preview";
         wrap.appendChild(img);
       }
 
       const rm = document.createElement("div");
       rm.className = "preview-remove";
-      rm.textContent = "×";
-      rm.title = "Remove";
+      rm.textContent = "×"; rm.title = "Remove";
       rm.addEventListener("click", () => {
         pendingFiles.splice(idx, 1);
         renderPreviewStrip();
       });
       wrap.appendChild(rm);
-
       previewStrip.appendChild(wrap);
     });
   }
@@ -797,7 +858,6 @@
   async function askAI() {
     const question = input.value.trim();
     const hasMedia = pendingFiles.length > 0;
-
     if ((!question && !hasMedia) || busy) return;
 
     busy = true;
@@ -810,18 +870,14 @@
     const filesToSend = pendingFiles.slice();
     filesToSend.forEach(item => addMediaMessage(item.dataUrl, item.type, "user"));
 
-    if (question) {
-      addMessage(question, "user");
-    } else if (hasMedia) {
-      addMessage("(Sent " + filesToSend.length + " attachment" + (filesToSend.length > 1 ? "s" : "") + ")", "user");
-    }
+    if (question) addMessage(question, "user");
+    else if (hasMedia) addMessage("(Sent " + filesToSend.length + " attachment" + (filesToSend.length > 1 ? "s" : "") + ")", "user");
 
     input.value = "";
     pendingFiles = [];
     renderPreviewStrip();
 
     const backendQuestion = question || "I've shared an image or video with you. Please take a look.";
-
     const loading = addTypingIndicator();
 
     try {
@@ -830,12 +886,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: backendQuestion,
-          history: history.slice(-10),
-          attachments: filesToSend.map(f => ({
-            name: f.file.name,
-            type: f.type,
-            size: f.file.size
-          }))
+          history: history.slice(-10)
         })
       });
 
@@ -866,44 +917,20 @@
     }
   }
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    askAI();
-  });
+  form.addEventListener("submit", (event) => { event.preventDefault(); askAI(); });
 
   clearBtn.addEventListener("click", () => {
     history = [];
     pendingFiles = [];
     renderPreviewStrip();
     box.replaceChildren();
-
-    // Re-add welcome + suggestions
-    const welcomeRow = document.createElement("div");
-    welcomeRow.className = "msg-row ai";
-    welcomeRow.innerHTML = `
-      <div class="avatar">
-        <img src="${BOT_AVATAR}" alt="TrekMate">
-      </div>
-      <div class="message msg-ai">
-        Namaste! 🙏 Welcome to TrekMate AI.<br><br>
-        Which trekking point would you like to know about? Or where do you want to go today? 🏔️
-      </div>
-    `;
-    box.appendChild(welcomeRow);
-
-    const sug = document.createElement("div");
-    sug.id = "suggestions";
-    sug.className = "flex flex-wrap gap-2 mb-4 ml-11";
-    sug.innerHTML = `
-      <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Tell me about Kedarkantha trek')">Kedarkantha</div>
-      <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Tell me about Hampta Pass trek')">Hampta Pass</div>
-      <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Best trek for beginners in Himalayas')">Beginner Treks</div>
-      <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Valley of Flowers trek details')">Valley of Flowers</div>
-    `;
-    box.appendChild(sug);
-
+    addMessage(WELCOME_TEXT, "ai");
+    box.appendChild(renderSuggestions());
     box.scrollTop = box.scrollHeight;
   });
+
+  addMessage(WELCOME_TEXT, "ai");
+  box.appendChild(renderSuggestions());
 </script>
 </body>
 </html>
