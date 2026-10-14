@@ -1,155 +1,158 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
+
 import os
+import logging
+from pathlib import Path
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
-from pydantic import BaseModel
-from dotenv import load_dotenv
 
 load_dotenv()
-app = FastAPI()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="TrekMate AI")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# Render dashboard mein GEMINI_API_KEY set hona chahiye
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY")
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable set nahi hai!")
+client = genai.Client(api_key=API_KEY) if API_KEY else None
 
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-# ✅ Sahi model name
-MODEL_NAME = "gemini-1.5-flash"   # stable, fast, free tier mein available
-
-# ✅ System instruction (optional but recommended)
-SYSTEM_PROMPT = (
-    "You are TrekMate AI, a helpful and knowledgeable trekking assistant. "
-    "You help users with trekking routes, gear, safety tips, weather, "
-    "permits, and best seasons for treks (especially Indian Himalayas). "
-    "Be friendly, concise, and practical. Reply in the same language "
-    "the user writes in (Hindi or English)."
-)
-
+SYSTEM_PROMPT = """
+You are TrekMate AI, a friendly and knowledgeable trekking assistant.
+Help with trekking routes, gear, fitness preparation, safety, permits,
+budgets, itineraries, and seasons, especially for Indian Himalayan treks.
+Reply in the same language as the user, including Hindi or English.
+Give practical, clear answers. Never invent live weather or claim
+current trail conditions have been verified when they have not.
+For dangerous conditions, prioritize safety and official local guidance.
+"""
 
 class ChatRequest(BaseModel):
-    question: str
+    question: str = Field(min_length=1, max_length=10000)
+    history: list[dict[str, str]] = Field(default_factory=list, max_length=12)
 
-
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>TrekMate AI</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            .chat-window { height: 75vh; }
-            .msg { max-width: 80%; margin-bottom: 10px; padding: 12px; border-radius: 15px; }
-        </style>
-    </head>
-    <body class="bg-slate-100 flex flex-col items-center p-4 font-sans">
-        <div class="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden mt-5 border border-slate-200">
-            <div class="bg-emerald-600 p-4 text-white text-xl font-bold text-center shadow-md">🥾 TrekMate Assistant</div>
-            <div id="box" class="chat-window p-4 overflow-y-auto flex flex-col bg-slate-50">
-                <div class="bg-slate-200 text-slate-800 msg self-start shadow-sm">Namaste! Main TrekMate AI hoon. Main aapki kya madad kar sakta hoon?</div>
-            </div>
-            <div class="p-4 flex gap-2 bg-white border-t">
-                <input type="text" id="userInput" class="flex-1 p-3 border rounded-full px-5 focus:ring-2 focus:ring-emerald-500 outline-none border-slate-300" placeholder="Ask about any trek...">
-                <button onclick="ask()" id="sendBtn" class="bg-emerald-600 text-white px-8 py-3 rounded-full hover:bg-emerald-700 transition font-bold shadow-md">Send</button>
-            </div>
-        </div>
-        <script>
-            async function ask() {
-                const input = document.getElementById('userInput');
-                const box = document.getElementById('box');
-                const btn = document.getElementById('sendBtn');
-                const q = input.value.trim();
-                if(!q) return;
-
-                box.innerHTML += `<div class="bg-emerald-500 text-white msg self-end shadow-md">${q}</div>`;
-                input.value = '';
-                btn.disabled = true;
-                box.scrollTop = box.scrollHeight;
-
-                try {
-                    const res = await fetch('/chat', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ question: q })
-                    });
-                    
-                    const data = await res.json();
-                    
-                    if (data.answer) {
-                        box.innerHTML += `<div class="bg-white text-slate-800 msg self-start border border-slate-200 shadow-sm"><b>TrekMate:</b><br>${data.answer}</div>`;
-                    } else {
-                        box.innerHTML += `<div class="bg-red-50 text-red-600 msg self-start border border-red-100 shadow-sm text-xs"><b>Error:</b><br>${data.error || 'Kuch galat hua'}</div>`;
-                    }
-                } catch (e) {
-                    box.innerHTML += `<div class="bg-red-50 text-red-600 msg self-start border border-red-100 shadow-sm text-xs">Connection failed!</div>`;
-                }
-                btn.disabled = false;
-                box.scrollTop = box.scrollHeight;
-            }
-            document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key==='Enter') ask(); });
-        </script>
-    </body>
-    </html>
-    """
-
-
-@app.post("/chat")
-async def chat(request: ChatRequest):
-    try:
-        print(f"User Question: {request.question}")
-
-        # ✅ Naya SDK: system instruction config ke through
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=request.question,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.7,
-                max_output_tokens=1024,
-            ),
-        )
-
-        # ✅ Response safely nikaalo
-        text = None
-        try:
-            text = response.text
-        except Exception:
-            # Fallback: candidates se nikaalo
-            if response.candidates and len(response.candidates) > 0:
-                parts = response.candidates[0].content.parts
-                text = "".join(p.text for p in parts if hasattr(p, "text"))
-
-        if not text:
-            return {"error": "AI ne khali response bheja. API key / quota check karein."}
-
-        return {"answer": text}
-
-    except Exception as e:
-        print(f"ERROR: {str(e)}")
-        return {"error": str(e)}
-
+    index_file = Path(__file__).parent / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"message": "TrekMate AI API is running", "docs": "/docs"}
 
 @app.get("/health")
 async def health():
-    """Quick test endpoint — browser mein kholo, chalega to API key sahi hai."""
-    try:
-        r = client.models.generate_content(
-            model=MODEL_NAME,
-            contents="Say 'OK' only.",
+    if not API_KEY or client is None:
+        raise HTTPException(
+            status_code=500,
+            detail="GEMINI_API_KEY is missing in environment variables."
         )
-        return {"status": "ok", "model": MODEL_NAME, "reply": r.text}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+
+    try:
+        info = client.models.get(model=MODEL_NAME)
+        return {
+            "status": "ok",
+            "model": info.name or MODEL_NAME,
+            "message": "Gemini model is accessible."
+        }
+    except Exception as exc:
+        logger.exception("Gemini health check failed")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Gemini model check failed: {str(exc)[:500]}"
+        )
+
+@app.get("/models")
+async def models():
+    if client is None:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is missing.")
+
+    try:
+        result = client.models.list()
+        available = []
+        for model in result:
+            methods = getattr(model, "supported_actions", None) or []
+            if "generateContent" in methods:
+                available.append(model.name)
+        return {"models": available}
+    except Exception as exc:
+        logger.exception("Could not list models")
+        raise HTTPException(status_code=502, detail=str(exc)[:500])
+
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    if client is None:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
+
+    question = request.question.strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="Please enter a question.")
+
+    # Keep only valid, recent user/assistant messages.
+    contents = []
+    for item in request.history[-12:]:
+        role = item.get("role")
+        message = item.get("content", "").strip()
+        if role in ("user", "assistant") and message:
+            contents.append(
+                types.Content(
+                    role="user" if role == "user" else "model",
+                    parts=[types.Part.from_text(text=message[:4000])]
+                )
+            )
+
+    contents.append(
+        types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=question)]
+        )
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                max_output_tokens=1200,
+            ),
+        )
+
+        answer = response.text
+        if not answer or not answer.strip():
+            raise HTTPException(
+                status_code=502,
+                detail="Gemini returned an empty response. Try again."
+            )
+
+        return {"answer": answer.strip(), "model": MODEL_NAME}
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Chat generation failed")
+
+        message = str(exc)
+        if "404" in message or "NOT_FOUND" in message:
+            detail = (
+                f"Model '{MODEL_NAME}' is unavailable. Check GET /models "
+                "and set GEMINI_MODEL to a listed model."
+            )
+        elif "429" in message or "RESOURCE_EXHAUSTED" in message:
+            detail = "Gemini API quota or rate limit reached. Try again later."
+        elif "403" in message or "PERMISSION_DENIED" in message:
+            detail = "Gemini API access denied. Check your API key and permissions."
+        else:
+            detail = f"Gemini request failed: {message[:400]}"
+
+        raise HTTPException(status_code=502, detail=detail)
