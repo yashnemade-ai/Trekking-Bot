@@ -1,9 +1,11 @@
 import os
 import logging
 from pathlib import Path
+from typing import Optional
 
+import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -23,8 +25,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ═══════════════════════════════════════════════
+#  CONFIG
+# ═══════════════════════════════════════════════
 API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
+UNSPLASH_ENABLED = bool(UNSPLASH_ACCESS_KEY and UNSPLASH_ACCESS_KEY.strip())
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
 
@@ -56,6 +64,9 @@ class ChatRequest(BaseModel):
     history: list[dict[str, str]] = Field(default_factory=list, max_length=12)
 
 
+# ═══════════════════════════════════════════════
+#  FRONTEND
+# ═══════════════════════════════════════════════
 @app.get("/")
 async def home():
     index_file = Path(__file__).parent / "index.html"
@@ -64,6 +75,9 @@ async def home():
     return {"message": "TrekMate AI API is running", "docs": "/docs"}
 
 
+# ═══════════════════════════════════════════════
+#  HEALTH
+# ═══════════════════════════════════════════════
 @app.get("/health")
 async def health():
     if not API_KEY or client is None:
@@ -76,7 +90,8 @@ async def health():
         return {
             "status": "ok",
             "model": info.name or MODEL_NAME,
-            "message": "Gemini model is accessible."
+            "unsplash": UNSPLASH_ENABLED,
+            "message": "TrekMate AI is running."
         }
     except Exception as exc:
         logger.exception("Gemini health check failed")
@@ -100,6 +115,85 @@ async def models():
         raise HTTPException(status_code=502, detail=str(exc)[:500])
 
 
+# ═══════════════════════════════════════════════
+#  ⭐ UNSPLASH IMAGE PROXY
+#  Keeps the API key SAFE on the server.
+#  Frontend calls: GET /images?q=kedarkantha+trek&count=4
+# ═══════════════════════════════════════════════
+@app.get("/images")
+async def images(
+    q: str = Query(..., min_length=2, max_length=100, description="Search query"),
+    count: int = Query(4, ge=1, le=12, description="Number of images"),
+):
+    if not UNSPLASH_ENABLED:
+        # Return empty list gracefully if Unsplash not configured.
+        return {"images": [], "reason": "Unsplash not configured on server."}
+
+    # Sanitize query
+    search_query = q.strip()
+    if not search_query:
+        return {"images": []}
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as http:
+            res = await http.get(
+                "https://api.unsplash.com/search/photos",
+                params={
+                    "query": search_query,
+                    "per_page": count,
+                    "orientation": "landscape",
+                    "content_filter": "high",
+                },
+                headers={
+                    "Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}",
+                    "Accept-Version": "v1",
+                },
+            )
+
+        if res.status_code == 401:
+            logger.warning("Unsplash: invalid access key")
+            raise HTTPException(status_code=401, detail="Unsplash access key invalid.")
+        if res.status_code == 403:
+            raise HTTPException(status_code=403, detail="Unsplash forbidden.")
+        if res.status_code == 429:
+            raise HTTPException(status_code=429, detail="Unsplash rate limit reached. Try again later.")
+
+        if res.status_code != 200:
+            logger.warning("Unsplash error: %s %s", res.status_code, res.text[:200])
+            raise HTTPException(status_code=502, detail=f"Unsplash returned {res.status_code}")
+
+        data = res.json()
+        results = data.get("results", [])
+
+        payload = []
+        for img in results:
+            user = img.get("user") or {}
+            user_links = user.get("links") or {}
+            payload.append({
+                "id":         img.get("id"),
+                "thumb":      (img.get("urls") or {}).get("small"),
+                "full":       (img.get("urls") or {}).get("regular"),
+                "alt":        img.get("alt_description") or img.get("description") or "Trek image",
+                "credit":     user.get("name") or "Unsplash",
+                "creditLink": (user_links.get("html") or "https://unsplash.com") +
+                              "?utm_source=trekmate&utm_medium=referral",
+            })
+
+        return {"images": payload}
+
+    except HTTPException:
+        raise
+    except httpx.TimeoutException:
+        logger.warning("Unsplash request timed out")
+        raise HTTPException(status_code=504, detail="Unsplash request timed out.")
+    except Exception as exc:
+        logger.exception("Unsplash proxy failed")
+        raise HTTPException(status_code=502, detail=f"Image fetch failed: {str(exc)[:200]}")
+
+
+# ═══════════════════════════════════════════════
+#  CHAT
+# ═══════════════════════════════════════════════
 @app.post("/chat")
 async def chat(request: ChatRequest):
     if client is None:
