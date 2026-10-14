@@ -239,7 +239,76 @@ async def chat(request: ChatRequest):
                 detail="Gemini returned an empty response. Try again."
             )
 
-        return {"answer": answer, "model": MODEL_NAME}
+        
+        images_payload = []
+
+        # Search for trekking photos when relevant
+        image_keywords = (
+            "image", "images", "photo", "photos", "picture", "pictures",
+            "show me", "dikhao", "tasveer", "trek", "trekking",
+            "himalaya", "mountain", "waterfall", "camp", "trail",
+            "kedarkantha", "hampta", "sinhagad", "valley", "peak"
+        )
+
+        if UNSPLASH_ENABLED and any(
+            keyword in question.lower() for keyword in image_keywords
+        ):
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as http:
+                    res = await http.get(
+                        "https://api.unsplash.com/search/photos",
+                        params={
+                            "query": question[:100],
+                            "per_page": 4,
+                            "orientation": "landscape",
+                            "content_filter": "high",
+                        },
+                        headers={
+                            "Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}",
+                            "Accept-Version": "v1",
+                        },
+                    )
+
+                if res.status_code == 200:
+                    for img in res.json().get("results", []):
+                        urls = img.get("urls") or {}
+                        user = img.get("user") or {}
+                        user_links = user.get("links") or {}
+
+                        image_url = urls.get("regular")
+                        if image_url:
+                            credit_link = (
+                                user_links.get("html") or "https://unsplash.com"
+                            )
+                            separator = "&" if "?" in credit_link else "?"
+                            images_payload.append({
+                                "url": image_url,
+                                "alt": (
+                                    img.get("alt_description")
+                                    or img.get("description")
+                                    or "Trekking photo"
+                                ),
+                                "credit": user.get("name") or "Unsplash",
+                                "link": (
+                                    credit_link + separator
+                                    + "utm_source=trekmate"
+                                    + "&utm_medium=referral"
+                                ),
+                            })
+                else:
+                    logger.warning(
+                        "Unsplash search failed: HTTP %s", res.status_code
+                    )
+
+            except Exception:
+                logger.exception("Failed to fetch chat images")
+
+        return {
+            "answer": answer,
+            "model": MODEL_NAME,
+            "images": images_payload,
+        }
+
 
     except HTTPException:
         raise
