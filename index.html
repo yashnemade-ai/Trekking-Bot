@@ -12,19 +12,49 @@
 <style>
   * { font-family: 'Inter', system-ui, sans-serif; }
 
-  /* ───── Animated Sunset Gradient Background ───── */
+  /* ───── Rotating Background Images ───── */
+  #bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+  }
+  .bg-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+    will-change: opacity;
+  }
+  .bg-slide.active { opacity: 1; }
+
+  #bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg,
+      rgba(30, 27, 75, 0.78) 0%,
+      rgba(76, 29, 149, 0.72) 45%,
+      rgba(131, 24, 67, 0.78) 100%);
+    pointer-events: none;
+  }
+
+  /* ───── Animated Orbs ───── */
   body {
-    background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 45%, #831843 100%);
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
+    background: #1e1b4b;
   }
   body::before, body::after {
     content: '';
     position: fixed;
     border-radius: 50%;
     filter: blur(120px);
-    opacity: 0.4;
+    opacity: 0.35;
     z-index: 0;
     pointer-events: none;
   }
@@ -59,9 +89,9 @@
 
   /* ───── Chat Window ───── */
   .chat-window {
-    height: 66vh;
+    height: 62vh;
     min-height: 320px;
-    max-height: 620px;
+    max-height: 600px;
     scroll-behavior: smooth;
   }
   .chat-window::-webkit-scrollbar { width: 6px; }
@@ -111,7 +141,25 @@
     border-bottom-left-radius: 6px;
   }
 
-  /* ───── Message Row with Avatar ───── */
+  /* Media bubbles */
+  .msg-media {
+    max-width: 85%;
+    margin-bottom: 14px;
+    border-radius: 18px;
+    overflow: hidden;
+    animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.15);
+  }
+  .msg-media img,
+  .msg-media video {
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    border-radius: 18px;
+  }
+
+  /* ───── Message Row ───── */
   .msg-row {
     display: flex;
     align-items: flex-end;
@@ -125,12 +173,16 @@
   .avatar {
     width: 34px; height: 34px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
     flex-shrink: 0;
-    box-shadow: 0 3px 8px -2px rgba(0,0,0,0.12);
+    overflow: hidden;
+    box-shadow: 0 3px 8px -2px rgba(0,0,0,0.15);
+    background: #fff;
+    border: 1.5px solid rgba(255,255,255,0.9);
+  }
+  .avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   /* ───── Typing Indicator ───── */
@@ -153,10 +205,19 @@
     30%           { transform: translateY(-6px); opacity: 1; }
   }
 
-  /* ───── Input Focus Glow ───── */
+  /* ───── Input ───── */
   .input-wrap:focus-within {
     box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
     background: #fff;
+  }
+
+  .attach-btn {
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .attach-btn:hover {
+    background: #fce7f3;
+    color: #db2777;
   }
 
   /* ───── Send Button ───── */
@@ -169,6 +230,44 @@
   }
   .send-btn:active:not(:disabled) { transform: translateY(0) scale(0.96); }
   .send-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  /* ───── Preview Strip ───── */
+  #previewStrip {
+    display: none;
+  }
+  #previewStrip.show {
+    display: flex;
+  }
+  .preview-thumb {
+    position: relative;
+    width: 68px; height: 68px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #ec4899;
+    box-shadow: 0 4px 10px -2px rgba(236, 72, 153, 0.35);
+    background: #f8fafc;
+  }
+  .preview-thumb img,
+  .preview-thumb video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .preview-remove {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px -1px rgba(0,0,0,0.3);
+    border: 2px solid white;
+  }
+  .preview-remove:hover { background: #dc2626; }
 
   /* ───── Header shimmer ───── */
   .shimmer {
@@ -186,7 +285,7 @@
     100% { background-position: -200% 0; }
   }
 
-  /* ───── Status dot pulse ───── */
+  /* ───── Status dot ───── */
   .status-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
@@ -207,18 +306,35 @@
     100% { transform: scale(2);   opacity: 0; }
   }
 
-  /* ───── Clear button hover ───── */
-  .clear-btn {
-    transition: all 0.2s ease;
-  }
+  /* ───── Clear button ───── */
+  .clear-btn { transition: all 0.2s ease; }
   .clear-btn:hover {
     color: #db2777;
     background: #fdf2f8;
+  }
+
+  /* ───── Header logo image ───── */
+  .logo-img {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 6px 14px -4px rgba(0,0,0,0.35);
+    border: 2px solid rgba(255,255,255,0.5);
+    background: #fff;
   }
 </style>
 </head>
 
 <body class="flex items-center justify-center p-3 sm:p-5">
+
+  <!-- ═══ Rotating Backgrounds ═══ -->
+  <div id="bg-layer">
+    <div class="bg-slide active"
+         style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4iFGYKCxmclbndrMe4BKh1rANgHEH2-7L_coHJhJOjg&s=10');"></div>
+    <div class="bg-slide"
+         style="background-image: url('https://plus.unsplash.com/premium_photo-1661883853185-165f5869e6d3?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D');"></div>
+  </div>
+  <div id="bg-overlay"></div>
 
   <main class="w-full max-w-3xl glass-card rounded-3xl shadow-2xl overflow-hidden relative z-10 mt-2 sm:mt-4">
 
@@ -233,9 +349,10 @@
       <div class="shimmer"></div>
 
       <div class="relative flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl shadow-lg ring-1 ring-white/30">
-          🥾
-        </div>
+        <!-- Logo image -->
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKD4RQPtnIB14IkBIkgY_HXeHgRwKSwkC1gbLY_QbIA&s=10"
+             alt="TrekMate Logo"
+             class="logo-img">
 
         <div class="flex-1 min-w-0">
           <h1 class="text-xl sm:text-2xl font-bold tracking-tight">TrekMate AI</h1>
@@ -248,7 +365,7 @@
         </div>
 
         <div class="hidden sm:flex items-center gap-2 text-xs bg-white/15 rounded-full px-3 py-1.5 backdrop-blur-md ring-1 ring-white/25">
-          <span>🏔️</span><span class="font-medium">Summit Ready</span>
+          <span>🧭</span><span class="font-medium">Adventure Awaits</span>
         </div>
       </div>
     </header>
@@ -259,20 +376,37 @@
          aria-live="polite">
 
       <div class="msg-row ai">
-        <div class="avatar bg-rose-100 text-rose-700">🥾</div>
+        <div class="avatar">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTa7y5WMeKNQJz1Tlicgldr6S8ROj61IIzFnDZ79VNxlw&s=10" alt="TrekMate">
+        </div>
         <div class="message msg-ai">
           Namaste! 🙏 I'm TrekMate AI. Ask me anything about treks, routes, budgets, gear, or safety.
         </div>
       </div>
     </div>
 
+    <!-- ═══ Preview Strip (media thumbnails) ═══ -->
+    <div id="previewStrip" class="px-4 pt-3 pb-1 gap-2 bg-white border-t border-slate-100"></div>
+
     <!-- ═══ Input Form ═══ -->
-    <form id="chatForm" class="p-3 sm:p-4 border-t border-slate-100 bg-white">
-      <div class="input-wrap flex items-center gap-2 bg-slate-100 rounded-full p-1.5 pl-5 transition-all duration-200">
+    <form id="chatForm" class="p-3 sm:p-4 bg-white">
+      <div class="input-wrap flex items-center gap-2 bg-slate-100 rounded-full p-1.5 pl-2 transition-all duration-200">
+
+        <!-- Attach button -->
+        <button type="button" id="attachBtn"
+                class="attach-btn w-10 h-10 rounded-full flex items-center justify-center text-slate-500"
+                title="Attach photo or video">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+          </svg>
+        </button>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
 
         <input id="userInput" type="text" maxlength="10000"
                class="flex-1 min-w-0 bg-transparent py-2.5 text-slate-700 placeholder-slate-400 text-[15px] outline-none"
-               placeholder="Ask about any trek..." autocomplete="off" required>
+               placeholder="Ask about any trek..." autocomplete="off">
 
         <button id="sendBtn" type="submit"
                 class="send-btn bg-gradient-to-br from-amber-500 to-pink-600 hover:from-amber-600 hover:to-pink-700 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30 flex-shrink-0">
@@ -307,9 +441,26 @@
   </main>
 
 <script>
-  // ───────────── Existing logic (unchanged) ─────────────
-  // If frontend is hosted separately, replace this with your Render backend URL.
-  // If frontend is served by the same FastAPI app, leave it empty.
+  // ───────────── Image URLs (single source) ─────────────
+  const BOT_AVATAR  = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTa7y5WMeKNQJz1Tlicgldr6S8ROj61IIzFnDZ79VNxlw&s=10";
+  const USER_AVATAR = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKD4RQPtnIB14IkBIkgY_HXeHgRwKSwkC1gbLY_QbIA&s=10";
+
+  // ───────────── Rotating Backgrounds (every 2 min) ─────────────
+  (function initBackgroundSlideshow() {
+    const slides = document.querySelectorAll(".bg-slide");
+    if (slides.length < 2) return;
+
+    let current = 0;
+    const ROTATE_MS = 2 * 60 * 1000; // 2 minutes
+
+    setInterval(() => {
+      slides[current].classList.remove("active");
+      current = (current + 1) % slides.length;
+      slides[current].classList.add("active");
+    }, ROTATE_MS);
+  })();
+
+  // ───────────── Config ─────────────
   const BACKEND_URL = "";
 
   const form = document.getElementById("chatForm");
@@ -317,11 +468,42 @@
   const box = document.getElementById("chatWindow");
   const sendBtn = document.getElementById("sendBtn");
   const clearBtn = document.getElementById("clearBtn");
+  const attachBtn = document.getElementById("attachBtn");
+  const fileInput = document.getElementById("fileInput");
+  const previewStrip = document.getElementById("previewStrip");
 
   let history = [];
   let busy = false;
+  let pendingFiles = [];   // array of { file, dataUrl, type }
 
-  // ───── Helper: build a message row (avatar + bubble) ─────
+  // ───── Strip markdown ─────
+  function stripMarkdown(text) {
+    if (!text) return "";
+    return text
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/__(.+?)__/g, "$1")
+      .replace(/_(.+?)_/g, "$1")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/`(.+?)`/g, "$1")
+      .replace(/^\s*[-*+]\s+/gm, "• ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  // ───── Avatar builder ─────
+  function makeAvatar(src) {
+    const a = document.createElement("div");
+    a.className = "avatar";
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "avatar";
+    a.appendChild(img);
+    return a;
+  }
+
+  // ───── Text message ─────
   function addMessage(text, sender) {
     const row = document.createElement("div");
     row.className = "msg-row " + (
@@ -329,17 +511,10 @@
       sender === "error" ? "error" : "ai"
     );
 
-    const avatar = document.createElement("div");
-    if (sender === "user") {
-      avatar.className = "avatar bg-slate-200 text-slate-600";
-      avatar.textContent = "🧑";
-    } else if (sender === "error") {
-      avatar.className = "avatar bg-red-100 text-red-600";
-      avatar.textContent = "⚠️";
-    } else {
-      avatar.className = "avatar bg-rose-100 text-rose-700";
-      avatar.textContent = "🥾";
-    }
+    const avatar = makeAvatar(
+      sender === "user" ? USER_AVATAR :
+      sender === "error" ? BOT_AVATAR : BOT_AVATAR
+    );
 
     const bubble = document.createElement("div");
     bubble.className = "message " + (
@@ -347,18 +522,16 @@
       sender === "error" ? "msg-error" : "msg-ai"
     );
 
-    // textContent prevents HTML/script injection from messages.
     if (sender === "ai") {
       const label = document.createElement("span");
       label.className = "font-semibold text-rose-700 mr-1";
       label.textContent = "TrekMate:";
       bubble.appendChild(label);
-      bubble.appendChild(document.createTextNode(text));
+      bubble.appendChild(document.createTextNode(stripMarkdown(text)));
     } else {
       bubble.textContent = text;
     }
 
-    // Bot / error avatars go on the LEFT of the bubble
     if (sender === "user") {
       row.appendChild(bubble);
       row.appendChild(avatar);
@@ -372,38 +545,158 @@
     return row;
   }
 
-  // ───── Typing indicator (animated 3 dots) ─────
-  function addTypingIndicator() {
+  // ───── Media message (image / video) ─────
+  function addMediaMessage(dataUrl, type, sender = "user") {
     const row = document.createElement("div");
-    row.className = "msg-row ai";
-    row.id = "typingRow";
+    row.className = "msg-row " + sender;
 
-    row.innerHTML = `
-      <div class="avatar bg-rose-100 text-rose-700">🥾</div>
-      <div class="message msg-ai">
-        <span class="font-semibold text-rose-700 mr-1">TrekMate:</span>
-        <span class="typing"><span></span><span></span><span></span></span>
-      </div>
-    `;
+    const avatar = makeAvatar(sender === "user" ? USER_AVATAR : BOT_AVATAR);
+
+    const mediaWrap = document.createElement("div");
+    mediaWrap.className = "msg-media";
+
+    if (type.startsWith("video")) {
+      const v = document.createElement("video");
+      v.src = dataUrl;
+      v.controls = true;
+      v.muted = true;
+      mediaWrap.appendChild(v);
+    } else {
+      const img = document.createElement("img");
+      img.src = dataUrl;
+      img.alt = "attachment";
+      mediaWrap.appendChild(img);
+    }
+
+    if (sender === "user") {
+      row.appendChild(mediaWrap);
+      row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar);
+      row.appendChild(mediaWrap);
+    }
 
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
     return row;
   }
 
-  // ───── Form submit handler (existing logic preserved) ─────
+  // ───── Typing indicator ─────
+  function addTypingIndicator() {
+    const row = document.createElement("div");
+    row.className = "msg-row ai";
+    row.id = "typingRow";
+
+    const avatar = makeAvatar(BOT_AVATAR);
+    const bubble = document.createElement("div");
+    bubble.className = "message msg-ai";
+    bubble.innerHTML = `
+      <span class="font-semibold text-rose-700 mr-1">TrekMate:</span>
+      <span class="typing"><span></span><span></span><span></span></span>
+    `;
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+    return row;
+  }
+
+  // ───── File handling ─────
+  attachBtn.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files || []);
+    for (const file of files) {
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) continue;
+      if (file.size > 20 * 1024 * 1024) {
+        addMessage("File too large (max 20 MB): " + file.name, "error");
+        continue;
+      }
+      const dataUrl = await readFileAsDataURL(file);
+      pendingFiles.push({ file, dataUrl, type: file.type });
+    }
+    renderPreviewStrip();
+    fileInput.value = "";
+  });
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPreviewStrip() {
+    previewStrip.replaceChildren();
+    if (pendingFiles.length === 0) {
+      previewStrip.classList.remove("show");
+      return;
+    }
+    previewStrip.classList.add("show");
+
+    pendingFiles.forEach((item, idx) => {
+      const wrap = document.createElement("div");
+      wrap.className = "preview-thumb";
+
+      if (item.type.startsWith("video")) {
+        const v = document.createElement("video");
+        v.src = item.dataUrl;
+        v.muted = true;
+        wrap.appendChild(v);
+      } else {
+        const img = document.createElement("img");
+        img.src = item.dataUrl;
+        img.alt = "preview";
+        wrap.appendChild(img);
+      }
+
+      const rm = document.createElement("div");
+      rm.className = "preview-remove";
+      rm.textContent = "×";
+      rm.title = "Remove";
+      rm.addEventListener("click", () => {
+        pendingFiles.splice(idx, 1);
+        renderPreviewStrip();
+      });
+      wrap.appendChild(rm);
+
+      previewStrip.appendChild(wrap);
+    });
+  }
+
+  // ───── Form submit ─────
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const question = input.value.trim();
-    if (!question || busy) return;
+    const hasMedia = pendingFiles.length > 0;
+
+    if ((!question && !hasMedia) || busy) return;
 
     busy = true;
     sendBtn.disabled = true;
     input.disabled = true;
+    attachBtn.disabled = true;
 
-    addMessage(question, "user");
+    // Show any pending media in chat first
+    const filesToSend = pendingFiles.slice();
+    filesToSend.forEach(item => addMediaMessage(item.dataUrl, item.type, "user"));
+
+    if (question) {
+      addMessage(question, "user");
+    } else if (hasMedia) {
+      addMessage("(Sent " + filesToSend.length + " attachment" + (filesToSend.length > 1 ? "s" : "") + ")", "user");
+    }
+
     input.value = "";
+    pendingFiles = [];
+    renderPreviewStrip();
+
+    // Build the question to send to backend
+    const backendQuestion = question || "I've shared an image or video with you. Please take a look.";
 
     const loading = addTypingIndicator();
 
@@ -412,8 +705,13 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question,
-          history: history.slice(-10)
+          question: backendQuestion,
+          history: history.slice(-10),
+          attachments: filesToSend.map(f => ({
+            name: f.file.name,
+            type: f.type,
+            size: f.file.size
+          }))
         })
       });
 
@@ -426,7 +724,7 @@
 
       addMessage(data.answer, "ai");
       history.push(
-        { role: "user", content: question },
+        { role: "user", content: backendQuestion },
         { role: "assistant", content: data.answer }
       );
       history = history.slice(-12);
@@ -438,14 +736,17 @@
       busy = false;
       sendBtn.disabled = false;
       input.disabled = false;
+      attachBtn.disabled = false;
       input.focus();
       box.scrollTop = box.scrollHeight;
     }
   });
 
-  // ───── Clear chat (existing logic preserved) ─────
+  // ───── Clear chat ─────
   clearBtn.addEventListener("click", () => {
     history = [];
+    pendingFiles = [];
+    renderPreviewStrip();
     box.replaceChildren();
     addMessage("Namaste! I'm TrekMate AI. How can I help you today?", "ai");
   });
