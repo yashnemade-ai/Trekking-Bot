@@ -1,73 +1,143 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrekMate AI Chatbot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .chat-container { height: 70vh; }
-        .message { max-width: 80%; margin-bottom: 12px; padding: 10px; border-radius: 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrekMate AI Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .chat-window { height: 68vh; min-height: 320px; }
+    .message {
+      max-width: 85%;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      border-radius: 16px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+  </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center p-5">
-    <div class="w-full max-w-2xl bg-white shadow-xl rounded-lg overflow-hidden mt-10">
-        <div class="bg-green-600 p-4 text-white text-xl font-bold text-center">
-            🥾 TrekMate AI Assistant
-        </div>
-        
-        <div id="chat-window" class="chat-container p-4 overflow-y-auto flex flex-col bg-gray-50 border-b">
-            <div class="bg-gray-200 text-gray-800 message self-start">
-                Hello! Main aapka trekking guide hoon. Aap kya poochna chahte hain?
-            </div>
-        </div>
+<body class="min-h-screen bg-slate-100 flex flex-col items-center p-3 sm:p-6 font-sans">
 
-        <div class="p-4 flex gap-2">
-            <input type="text" id="userInput" class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ask something about treks...">
-            <button onclick="askAI()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">Send</button>
-        </div>
+  <main class="w-full max-w-3xl mt-4 bg-white rounded-2xl shadow-xl overflow-hidden">
+    <header class="bg-emerald-600 p-5 text-white text-center">
+      <h1 class="text-2xl font-bold">🥾 TrekMate AI</h1>
+      <p class="text-sm mt-1">Your personal trekking assistant</p>
+    </header>
+
+    <div id="chatWindow"
+         class="chat-window overflow-y-auto p-4 bg-slate-50 flex flex-col"
+         aria-live="polite">
+      <div class="message self-start bg-slate-200 text-slate-800">
+        Namaste! Main TrekMate AI hoon. Aap trek, route, budget, gear ya safety ke baare mein pooch sakte hain.
+      </div>
     </div>
 
-    <script>
-        // Aapka Render Backend URL
-        const BACKEND_URL = "https://trekking-bot-r0qe.onrender.com"; 
+    <form id="chatForm" class="p-4 flex gap-2 border-t">
+      <input id="userInput" type="text" maxlength="10000"
+             class="flex-1 min-w-0 border border-slate-300 rounded-full px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
+             placeholder="Ask about any trek..." autocomplete="off" required>
+      <button id="sendBtn" type="submit"
+              class="bg-emerald-600 text-white px-5 sm:px-7 rounded-full font-semibold hover:bg-emerald-700">
+        Send
+      </button>
+    </form>
 
-        async function askAI() {
-            const input = document.getElementById('userInput');
-            const chatWindow = document.getElementById('chat-window');
-            const question = input.value.trim();
-            
-            if(!question) return;
+    <div class="px-4 pb-4 flex justify-between text-xs text-slate-500">
+      <span>AI-generated guidance; verify local safety conditions.</span>
+      <button id="clearBtn" type="button" class="underline">Clear chat</button>
+    </div>
+  </main>
 
-            // User ka message dikhana
-            chatWindow.innerHTML += `<div class="bg-green-500 text-white message self-end shadow-sm">${question}</div>`;
-            input.value = '';
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+<script>
+  // If frontend is hosted separately, replace this with your Render backend URL.
+  // If frontend is served by the same FastAPI app, leave it empty.
+  const BACKEND_URL = "";
 
-            try {
-                // Backend ko call karna (/chat endpoint par)
-                const response = await fetch(`${BACKEND_URL}/chat`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ question: question })
-                });
-                
-                const data = await response.json();
-                
-                // AI ka reply dikhana
-                chatWindow.innerHTML += `<div class="bg-white text-gray-800 message self-start border shadow-sm">
-                    <b>TrekMate:</b><br>${data.answer}
-                </div>`;
-            } catch (error) {
-                chatWindow.innerHTML += `<div class="text-red-500 text-center text-sm italic">Error: Backend se connection nahi ho paya.</div>`;
-            }
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
+  const form = document.getElementById("chatForm");
+  const input = document.getElementById("userInput");
+  const box = document.getElementById("chatWindow");
+  const sendBtn = document.getElementById("sendBtn");
+  const clearBtn = document.getElementById("clearBtn");
 
-        // Enter key se send karne ke liye
-        document.getElementById('userInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') askAI();
-        });
-    </script>
+  let history = [];
+  let busy = false;
+
+  function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.className = "message " + (
+      sender === "user"
+        ? "self-end bg-emerald-500 text-white"
+        : sender === "error"
+          ? "self-start bg-red-50 text-red-700 border border-red-200"
+          : "self-start bg-white text-slate-800 border border-slate-200"
+    );
+
+    // textContent prevents HTML/script injection from messages.
+    div.textContent = sender === "ai" ? "TrekMate: " + text : text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const question = input.value.trim();
+    if (!question || busy) return;
+
+    busy = true;
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    addMessage(question, "user");
+    input.value = "";
+
+    const loading = addMessage("TrekMate is thinking...", "ai");
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question,
+          history: history.slice(-10)
+        })
+      });
+
+      const data = await response.json();
+      loading.remove();
+
+      if (!response.ok || !data.answer) {
+        throw new Error(data.detail || data.error || "AI response nahi mila.");
+      }
+
+      addMessage(data.answer, "ai");
+      history.push(
+        { role: "user", content: question },
+        { role: "assistant", content: data.answer }
+      );
+      history = history.slice(-12);
+
+    } catch (error) {
+      loading.remove();
+      addMessage("Error: " + error.message, "error");
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+      box.scrollTop = box.scrollHeight;
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    history = [];
+    box.replaceChildren();
+    addMessage("Namaste! Main TrekMate AI hoon. Aapki kya madad kar sakta hoon?", "ai");
+  });
+</script>
 </body>
 </html>
