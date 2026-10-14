@@ -1,393 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TrekMate AI Assistant</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  * { font-family: 'Inter', sans-serif; }
-
-  body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%);
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* Animated background orbs */
-  body::before, body::after {
-    content: '';
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.35;
-    z-index: 0;
-    pointer-events: none;
-  }
-  body::before {
-    width: 400px; height: 400px;
-    background: #10b981;
-    top: -100px; left: -100px;
-    animation: float1 12s ease-in-out infinite;
-  }
-  body::after {
-    width: 500px; height: 500px;
-    background: #059669;
-    bottom: -150px; right: -150px;
-    animation: float2 15s ease-in-out infinite;
-  }
-  @keyframes float1 {
-    0%,100% { transform: translate(0,0); }
-    50% { transform: translate(80px, 60px); }
-  }
-  @keyframes float2 {
-    0%,100% { transform: translate(0,0); }
-    50% { transform: translate(-80px, -60px); }
-  }
-
-  .glass {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-
-  .chat-container {
-    height: calc(100vh - 260px);
-    min-height: 420px;
-    max-height: 620px;
-    scroll-behavior: smooth;
-  }
-
-  /* Custom scrollbar */
-  .chat-container::-webkit-scrollbar { width: 6px; }
-  .chat-container::-webkit-scrollbar-track { background: transparent; }
-  .chat-container::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-  }
-  .chat-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-  .message {
-    max-width: 82%;
-    padding: 12px 16px;
-    border-radius: 18px;
-    font-size: 14.5px;
-    line-height: 1.5;
-    word-wrap: break-word;
-    animation: messageIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-  }
-
-  @keyframes messageIn {
-    from { opacity: 0; transform: translateY(12px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  .user-msg {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border-bottom-right-radius: 6px;
-    box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.45);
-  }
-
-  .bot-msg {
-    background: #ffffff;
-    color: #1e293b;
-    border: 1px solid #e2e8f0;
-    border-bottom-left-radius: 6px;
-    box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.08);
-  }
-
-  /* Typing indicator */
-  .typing {
-    display: inline-flex;
-    gap: 4px;
-    padding: 6px 4px;
-  }
-  .typing span {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #94a3b8;
-    animation: bounce 1.4s infinite;
-  }
-  .typing span:nth-child(2) { animation-delay: 0.2s; }
-  .typing span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-    30% { transform: translateY(-6px); opacity: 1; }
-  }
-
-  /* Send button pulse */
-  .send-btn:active { transform: scale(0.95); }
-
-  /* Avatar */
-  .avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  /* Message row */
-  .msg-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    margin-bottom: 14px;
-    animation: messageIn 0.35s ease-out;
-  }
-  .msg-row.user { justify-content: flex-end; }
-  .msg-row.bot { justify-content: flex-start; }
-
-  /* Timestamp */
-  .time {
-    font-size: 10.5px;
-    color: #94a3b8;
-    margin-top: 4px;
-    opacity: 0.8;
-  }
-  .user-msg .time { color: rgba(255,255,255,0.75); text-align: right; }
-
-  /* Input */
-  #userInput:focus { outline: none; }
-
-  /* Pulse ring on send */
-  .pulse-ring {
-    position: absolute;
-    border-radius: 9999px;
-    background: rgba(16, 185, 129, 0.4);
-    animation: pulseRing 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    pointer-events: none;
-  }
-  @keyframes pulseRing {
-    0%   { transform: scale(0.9); opacity: 0.7; }
-    100% { transform: scale(1.4); opacity: 0; }
-  }
-
-  /* Suggested chips */
-  .chip {
-    transition: all 0.2s ease;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .chip:hover {
-    transform: translateY(-2px);
-    background: #ecfdf5;
-    border-color: #10b981;
-    color: #047857;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrekMate AI Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chat-container { height: 70vh; }
+        .message { max-width: 80%; margin-bottom: 12px; padding: 10px; border-radius: 10px; }
+    </style>
 </head>
-
-<body class="flex items-center justify-center p-3 sm:p-6">
-
-  <div class="w-full max-w-2xl glass shadow-2xl rounded-3xl overflow-hidden relative z-10 border border-white/40">
-
-    <!-- Header -->
-    <div class="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 p-5 text-white overflow-hidden">
-      <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 20% 20%, white 1px, transparent 1px), radial-gradient(circle at 80% 60%, white 1px, transparent 1px); background-size: 60px 60px;"></div>
-
-      <div class="relative flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl shadow-lg">
-          🥾
+<body class="bg-gray-100 flex flex-col items-center p-5">
+    <div class="w-full max-w-2xl bg-white shadow-xl rounded-lg overflow-hidden mt-10">
+        <div class="bg-green-600 p-4 text-white text-xl font-bold text-center">
+            🥾 TrekMate AI Assistant
         </div>
-        <div class="flex-1">
-          <h1 class="text-xl font-bold tracking-tight">TrekMate AI</h1>
-          <div class="flex items-center gap-1.5 text-xs text-emerald-50/90 mt-0.5">
-            <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>
-            <span>Online • Trekking Assistant</span>
-          </div>
+        
+        <div id="chat-window" class="chat-container p-4 overflow-y-auto flex flex-col bg-gray-50 border-b">
+            <div class="bg-gray-200 text-gray-800 message self-start">
+                Hello! Main aapka trekking guide hoon. Aap kya poochna chahte hain?
+            </div>
         </div>
-        <div class="hidden sm:flex items-center gap-2 text-xs bg-white/15 rounded-full px-3 py-1.5 backdrop-blur">
-          <span>🏔️</span><span class="font-medium">Himalaya Ready</span>
+
+        <div class="p-4 flex gap-2">
+            <input type="text" id="userInput" class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ask something about treks...">
+            <button onclick="askAI()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">Send</button>
         </div>
-      </div>
     </div>
 
-    <!-- Chat window -->
-    <div id="chat-window" class="chat-container p-4 sm:p-5 overflow-y-auto flex flex-col bg-gradient-to-b from-slate-50 to-white">
+    <script>
+        // Aapka Render Backend URL
+        const BACKEND_URL = "https://trekking-bot-r0qe.onrender.com"; 
 
-      <!-- Welcome message -->
-      <div class="msg-row bot">
-        <div class="avatar bg-emerald-100 text-emerald-700 shadow-sm">🥾</div>
-        <div class="bot-msg">
-          <div class="font-semibold text-emerald-700 text-xs mb-1">TrekMate</div>
-          <div>Namaste! 🙏 Main aapka trekking guide hoon. Aap kya poochna chahte hain?</div>
-          <div class="time">abhi</div>
-        </div>
-      </div>
+        async function askAI() {
+            const input = document.getElementById('userInput');
+            const chatWindow = document.getElementById('chat-window');
+            const question = input.value.trim();
+            
+            if(!question) return;
 
-      <!-- Suggestions -->
-      <div id="suggestions" class="flex flex-wrap gap-2 mb-4 ml-11">
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Best trek for beginners?')">Best trek for beginners?</div>
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('What should I pack for Kedarkantha?')">Packing for Kedarkantha</div>
-        <div class="chip border border-slate-200 bg-white text-slate-600 text-xs px-3 py-1.5 rounded-full shadow-sm" onclick="quickAsk('Hampta Pass difficulty?')">Hampta Pass difficulty</div>
-      </div>
+            // User ka message dikhana
+            chatWindow.innerHTML += `<div class="bg-green-500 text-white message self-end shadow-sm">${question}</div>`;
+            input.value = '';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
-    </div>
+            try {
+                // Backend ko call karna (/chat endpoint par)
+                const response = await fetch(`${BACKEND_URL}/chat`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                // AI ka reply dikhana
+                chatWindow.innerHTML += `<div class="bg-white text-gray-800 message self-start border shadow-sm">
+                    <b>TrekMate:</b><br>${data.answer}
+                </div>`;
+            } catch (error) {
+                chatWindow.innerHTML += `<div class="text-red-500 text-center text-sm italic">Error: Backend se connection nahi ho paya.</div>`;
+            }
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
 
-    <!-- Input -->
-    <div class="p-3 sm:p-4 bg-white border-t border-slate-100">
-      <div class="flex items-center gap-2 bg-slate-100 rounded-2xl p-1.5 pl-4 focus-within:ring-2 focus-within:ring-emerald-400 focus-within:bg-white transition-all duration-200">
-
-        <input
-          type="text"
-          id="userInput"
-          class="flex-1 bg-transparent py-2.5 text-slate-700 placeholder-slate-400 text-[15px]"
-          placeholder="Ask something about treks..."
-          autocomplete="off"
-        >
-
-        <button
-          onclick="askAI()"
-          class="send-btn relative bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all duration-200 active:scale-95">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-
-      </div>
-      <p class="text-center text-[11px] text-slate-400 mt-2.5">TrekMate AI • Always verify trail conditions before hiking</p>
-    </div>
-
-  </div>
-
-<script>
-  // ---- Existing logic preserved ----
-  const BACKEND_URL = "https://trekking-bot-r0qe.onrender.com";
-
-  const chatWindow = document.getElementById('chat-window');
-  const input = document.getElementById('userInput');
-
-  function nowTime() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  function quickAsk(text) {
-    input.value = text;
-    askAI();
-  }
-
-  function removeSuggestions() {
-    const s = document.getElementById('suggestions');
-    if (s) s.remove();
-  }
-
-  function scrollBottom() {
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  }
-
-  function addUserMessage(text) {
-    const row = document.createElement('div');
-    row.className = 'msg-row user';
-    row.innerHTML = `
-      <div class="user-msg shadow-md">
-        <div>${escapeHtml(text)}</div>
-        <div class="time">${nowTime()}</div>
-      </div>
-      <div class="avatar bg-slate-200 text-slate-600 shadow-sm">🧑</div>
-    `;
-    chatWindow.appendChild(row);
-    scrollBottom();
-  }
-
-  function addTypingIndicator() {
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
-    row.id = 'typing-row';
-    row.innerHTML = `
-      <div class="avatar bg-emerald-100 text-emerald-700 shadow-sm">🥾</div>
-      <div class="bot-msg">
-        <div class="font-semibold text-emerald-700 text-xs mb-1">TrekMate</div>
-        <div class="typing"><span></span><span></span><span></span></div>
-      </div>
-    `;
-    chatWindow.appendChild(row);
-    scrollBottom();
-  }
-
-  function removeTypingIndicator() {
-    const r = document.getElementById('typing-row');
-    if (r) r.remove();
-  }
-
-  function addBotMessage(text) {
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
-    row.innerHTML = `
-      <div class="avatar bg-emerald-100 text-emerald-700 shadow-sm">🥾</div>
-      <div class="bot-msg">
-        <div class="font-semibold text-emerald-700 text-xs mb-1">TrekMate</div>
-        <div>${escapeHtml(text).replace(/\n/g, '<br>')}</div>
-        <div class="time">${nowTime()}</div>
-      </div>
-    `;
-    chatWindow.appendChild(row);
-    scrollBottom();
-  }
-
-  function addErrorMessage(text) {
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
-    row.innerHTML = `
-      <div class="avatar bg-red-100 text-red-600 shadow-sm">⚠️</div>
-      <div class="bot-msg" style="border-color:#fecaca; background:#fef2f2;">
-        <div class="font-semibold text-red-600 text-xs mb-1">Error</div>
-        <div class="text-red-600">${escapeHtml(text)}</div>
-      </div>
-    `;
-    chatWindow.appendChild(row);
-    scrollBottom();
-  }
-
-  async function askAI() {
-    const question = input.value.trim();
-    if (!question) return;
-
-    removeSuggestions();
-    addUserMessage(question);
-    input.value = '';
-    input.focus();
-
-    addTypingIndicator();
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question })
-      });
-
-      const data = await response.json();
-      removeTypingIndicator();
-      addBotMessage(data.answer || "Sorry, koi jawab nahi mila.");
-    } catch (error) {
-      removeTypingIndicator();
-      addErrorMessage("Backend se connection nahi ho paya. Please try again.");
-    }
-  }
-
-  // Enter key support
-  input.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') askAI();
-  });
-
-  // Auto-focus
-  window.addEventListener('load', () => input.focus());
-</script>
-
+        // Enter key se send karne ke liye
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') askAI();
+        });
+    </script>
 </body>
 </html>
