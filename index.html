@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <script>
+  // ✅ Default = LIGHT mode always
   (function() {
     const saved = localStorage.getItem("trekmate-theme");
     const theme = saved || "light";
@@ -20,24 +21,40 @@
 <style>
   * { font-family: 'Inter', system-ui, sans-serif; }
 
-  html, body { scrollbar-width: none; -ms-overflow-style: none; }
+  /* ═══════════════════════════════════════════════
+     HIDE ALL SCROLLBARS
+     ═══════════════════════════════════════════════ */
+  html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
   html::-webkit-scrollbar,
   body::-webkit-scrollbar,
   *::-webkit-scrollbar {
-    width: 0 !important; height: 0 !important;
-    display: none !important; background: transparent !important;
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+    background: transparent !important;
   }
-  * { scrollbar-width: none; -ms-overflow-style: none; }
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
+  /* ═══════════════════════════════════════════════
+     THEME VARIABLES — PURE GREEN
+     ═══════════════════════════════════════════════ */
   :root,
   [data-theme="light"] {
     --page-bg: #f0fdf4;
+    --page-bg-accent: #dcfce7;
     --card-bg: #ffffff;
     --card-border: rgba(22, 163, 74, 0.18);
     --header-bg-start: #14532d;
     --header-bg-end: #15803d;
     --chat-bg: #f0fdf4;
     --text-primary: #14532d;
+    --text-secondary: #15803d;
     --text-muted: #16a34a;
     --bubble-ai-bg: #ffffff;
     --bubble-ai-border: #bbf7d0;
@@ -62,12 +79,14 @@
 
   [data-theme="dark"] {
     --page-bg: #041206;
+    --page-bg-accent: #0a2010;
     --card-bg: #0a1f0f;
     --card-border: rgba(22, 163, 74, 0.3);
     --header-bg-start: #052e16;
     --header-bg-end: #15803d;
     --chat-bg: #041206;
     --text-primary: #dcfce7;
+    --text-secondary: #86efac;
     --text-muted: #4ade80;
     --bubble-ai-bg: #0f2818;
     --bubble-ai-border: #166534;
@@ -90,6 +109,9 @@
     --skeleton-bg: linear-gradient(90deg, #0f2818 0%, #166534 50%, #0f2818 100%);
   }
 
+  /* ═══════════════════════════════════════════════
+     PAGE
+     ═══════════════════════════════════════════════ */
   body {
     min-height: 100vh;
     background: var(--page-bg);
@@ -103,34 +125,51 @@
   body::before {
     content: '';
     position: fixed;
-    width: 600px; height: 600px; border-radius: 50%;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
     background: radial-gradient(circle, rgba(22,163,74,0.18), transparent 70%);
-    top: -220px; left: -220px; z-index: 0; pointer-events: none;
+    top: -220px;
+    left: -220px;
+    z-index: 0;
+    pointer-events: none;
     filter: blur(60px);
+    transition: opacity 0.35s ease;
   }
   [data-theme="dark"] body::before {
     background: radial-gradient(circle, rgba(22,163,74,0.22), transparent 70%);
   }
 
+  /* ═══════════════════════════════════════════════
+     CARD
+     ═══════════════════════════════════════════════ */
   .app-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     transition: background 0.35s ease, border-color 0.35s ease;
   }
 
+  /* ═══════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════ */
   .trek-header {
-    position: relative; overflow: hidden;
+    position: relative;
+    overflow: hidden;
     background: linear-gradient(180deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%);
+    transition: background 0.35s ease;
   }
   .trek-header .stars {
-    position: absolute; inset: 0;
+    position: absolute;
+    inset: 0;
     background-image:
       radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,0.85), transparent 50%),
       radial-gradient(1.2px 1.2px at 28% 8%, rgba(255,255,255,0.7), transparent 50%),
       radial-gradient(1px 1px at 45% 22%, rgba(255,255,255,0.8), transparent 50%),
       radial-gradient(1.3px 1.3px at 62% 12%, rgba(255,255,255,0.75), transparent 50%),
       radial-gradient(1.6px 1.6px at 78% 20%, rgba(255,255,255,0.9), transparent 50%),
-      radial-gradient(1px 1px at 88% 10%, rgba(255,255,255,0.7), transparent 50%);
+      radial-gradient(1px 1px at 88% 10%, rgba(255,255,255,0.7), transparent 50%),
+      radial-gradient(1.2px 1.2px at 35% 30%, rgba(255,255,255,0.6), transparent 50%),
+      radial-gradient(1px 1px at 55% 28%, rgba(255,255,255,0.65), transparent 50%);
     opacity: 0.75;
     animation: twinkle 4s ease-in-out infinite alternate;
     pointer-events: none;
@@ -138,11 +177,14 @@
   @keyframes twinkle { from{opacity:0.45;} to{opacity:0.9;} }
 
   .trek-header .mountains {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 55%;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 55%;
     pointer-events: none;
   }
   .trek-header .mountains svg {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 100%;
   }
   .trek-header .fog {
     position: absolute; left: 0; right: 0; bottom: 0; height: 30px;
@@ -152,23 +194,32 @@
   .trek-header .header-content { position: relative; z-index: 5; }
 
   .logo-img {
-    width: 46px; height: 46px; border-radius: 14px; object-fit: cover;
+    width: 46px; height: 46px;
+    border-radius: 14px; object-fit: cover;
     box-shadow: 0 6px 14px -4px rgba(0,0,0,0.5);
     border: 2px solid rgba(255,255,255,0.7);
     background: #fff; flex-shrink: 0;
     z-index: 6; position: relative;
   }
 
+  /* ═══════════════════════════════════════════════
+     THEME TOGGLE
+     ═══════════════════════════════════════════════ */
   .theme-toggle {
-    width: 40px; height: 40px; border-radius: 12px;
+    width: 40px; height: 40px;
+    border-radius: 12px;
     background: var(--toggle-bg);
     border: 1px solid var(--toggle-border);
     backdrop-filter: blur(10px);
     color: white;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
-    flex-shrink: 0; position: relative; z-index: 6;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 6;
   }
   .theme-toggle:hover {
     transform: translateY(-2px) rotate(-8deg);
@@ -182,20 +233,38 @@
   [data-theme="dark"] .theme-toggle .icon-sun  { display: block; color: #fde68a; }
   [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
+  /* ═══════════════════════════════════════════════
+     CHAT WINDOW
+     ═══════════════════════════════════════════════ */
   .chat-window {
-    height: 62vh; min-height: 320px; max-height: 600px;
+    height: 62vh;
+    min-height: 320px;
+    max-height: 600px;
     scroll-behavior: smooth;
-    overflow-y: auto; overflow-x: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: var(--chat-bg);
     transition: background 0.35s ease;
   }
 
+  /* ═══════════════════════════════════════════════
+     MESSAGES (all bold)
+     ═══════════════════════════════════════════════ */
   .message {
-    max-width: 85%; padding: 12px 16px; margin-bottom: 14px;
-    border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere;
-    font-size: 14.5px; line-height: 1.6; font-weight: 700;
+    max-width: 85%;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border-radius: 18px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 14.5px;
+    line-height: 1.6;
+    font-weight: 700;
     animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative; text-align: left; z-index: 1;
+    position: relative;
+    text-align: left;
+    z-index: 1;
+    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
   }
   @keyframes msgIn {
     from { opacity: 0; transform: translateY(14px) scale(0.95); }
@@ -204,26 +273,39 @@
 
   .msg-user {
     background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
-    color: #ffffff; border-bottom-right-radius: 6px;
+    color: #ffffff;
+    border-bottom-right-radius: 6px;
     box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.6);
+    font-weight: 700;
   }
+
   .msg-ai {
-    background: var(--bubble-ai-bg); color: var(--bubble-ai-text);
+    background: var(--bubble-ai-bg);
+    color: var(--bubble-ai-text);
     border: 1px solid var(--bubble-ai-border);
     border-bottom-left-radius: 6px;
     box-shadow: var(--bubble-ai-shadow);
   }
+
   .msg-error {
-    background: var(--bubble-error-bg); color: var(--bubble-error-text);
+    background: var(--bubble-error-bg);
+    color: var(--bubble-error-text);
     border: 1px solid var(--bubble-error-border);
     border-bottom-left-radius: 6px;
+    box-shadow: 0 8px 20px -6px rgba(220,38,38,0.25);
   }
-  .msg-ai strong { font-weight: 900; color: #15803d; }
+
+  .msg-ai strong {
+    font-weight: 900;
+    color: #15803d;
+  }
   .msg-user strong { font-weight: 900; color: #fff; }
+
   [data-theme="dark"] .msg-ai strong { color: #86efac; }
 
   .msg-media {
-    max-width: 85%; margin-bottom: 14px; border-radius: 18px; overflow: hidden;
+    max-width: 85%; margin-bottom: 14px;
+    border-radius: 18px; overflow: hidden;
     animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 4px 14px -4px rgba(22,163,74,0.35);
     position: relative; z-index: 1;
@@ -248,9 +330,15 @@
   }
   .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  .ai-label { color: #16a34a; font-weight: 900; }
+  .ai-label {
+    color: #16a34a;
+    font-weight: 900;
+  }
   [data-theme="dark"] .ai-label { color: #4ade80; }
 
+  /* ═══════════════════════════════════════════════
+     TYPING
+     ═══════════════════════════════════════════════ */
   .typing { display: inline-flex; gap: 5px; padding: 4px 2px; align-items: center; }
   .typing span {
     width: 7px; height: 7px; border-radius: 50%;
@@ -263,29 +351,56 @@
     30%           { transform: translateY(-6px); opacity: 1; }
   }
 
+  /* ═══════════════════════════════════════════════
+     ⭐ UNSPLASH GALLERY
+     ═══════════════════════════════════════════════ */
   .gallery-wrap {
-    display: flex; align-items: flex-end; gap: 10px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
     animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    margin-bottom: 14px; max-width: 92%;
-    z-index: 1; position: relative;
+    margin-bottom: 14px;
+    max-width: 92%;
+    z-index: 1;
+    position: relative;
   }
+
   .gallery-card {
     background: var(--bubble-ai-bg);
     border: 1px solid var(--bubble-ai-border);
-    border-radius: 18px; border-bottom-left-radius: 6px;
-    padding: 10px; box-shadow: var(--bubble-ai-shadow); width: 100%;
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    padding: 10px;
+    box-shadow: var(--bubble-ai-shadow);
+    width: 100%;
   }
+
   .gallery-label {
-    font-size: 11.5px; font-weight: 800; color: #16a34a;
-    letter-spacing: 0.02em; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #16a34a;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
   }
   [data-theme="dark"] .gallery-label { color: #4ade80; }
-  .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
 
   .img-card {
-    position: relative; aspect-ratio: 4 / 3; border-radius: 12px;
-    overflow: hidden; cursor: pointer; background: var(--chip-bg);
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--chip-bg);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
   .img-card:hover {
@@ -294,32 +409,53 @@
     z-index: 2;
   }
   .img-card img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
     transition: transform 0.4s ease;
   }
   .img-card:hover img { transform: scale(1.08); }
+
   .img-card::after {
     content: '🔍';
-    position: absolute; bottom: 6px; right: 6px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: rgba(0,0,0,0.55); color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; opacity: 0; transition: opacity 0.25s ease;
+    position: absolute;
+    bottom: 6px; right: 6px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
     pointer-events: none;
   }
   .img-card:hover::after { opacity: 1; }
 
   .gallery-credit {
-    margin-top: 8px; font-size: 10px;
-    color: var(--text-muted); text-align: right;
-    font-weight: 700; opacity: 0.85;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: right;
+    font-weight: 700;
+    opacity: 0.85;
   }
-  .gallery-credit a { color: #16a34a; text-decoration: none; font-weight: 800; }
+  .gallery-credit a {
+    color: #16a34a;
+    text-decoration: none;
+    font-weight: 800;
+  }
   .gallery-credit a:hover { text-decoration: underline; }
 
+  /* Skeleton loading */
   .img-skeleton {
-    aspect-ratio: 4 / 3; border-radius: 12px;
-    background: var(--skeleton-bg); background-size: 200% 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    background: var(--skeleton-bg);
+    background-size: 200% 100%;
     animation: shimmerSlide 1.5s linear infinite;
   }
   @keyframes shimmerSlide {
@@ -327,47 +463,99 @@
     to   { background-position: -200% 0; }
   }
 
+  /* ═══════════════════════════════════════════════
+     LIGHTBOX
+     ═══════════════════════════════════════════════ */
   .lightbox {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; animation: lbIn 0.25s ease-out; padding: 20px;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: lbIn 0.25s ease-out;
+    padding: 20px;
     cursor: zoom-out;
   }
   @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+
   .lightbox img {
-    max-width: 95vw; max-height: 85vh; border-radius: 14px;
+    max-width: 95vw;
+    max-height: 85vh;
+    border-radius: 14px;
     box-shadow: 0 20px 60px -10px rgba(0,0,0,0.9);
+    animation: lbImgIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+  @keyframes lbImgIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
   .lb-close {
-    position: absolute; top: 20px; right: 24px;
-    width: 44px; height: 44px; border-radius: 50%;
+    position: absolute;
+    top: 20px; right: 24px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
     background: rgba(255,255,255,0.15);
     border: 1px solid rgba(255,255,255,0.3);
-    color: white; font-size: 26px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.2s ease;
+    color: white;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
     backdrop-filter: blur(10px);
   }
   .lb-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+
   .lb-credit {
-    position: absolute; bottom: 24px; left: 0; right: 0;
-    text-align: center; color: rgba(255,255,255,0.85);
-    font-size: 12.5px; font-weight: 700;
+    position: absolute;
+    bottom: 24px; left: 0; right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.85);
+    font-size: 12.5px;
+    font-weight: 700;
   }
-  .lb-credit a { color: #86efac; text-decoration: none; font-weight: 800; }
+  .lb-credit a {
+    color: #86efac;
+    text-decoration: none;
+    font-weight: 800;
+  }
   .lb-credit a:hover { text-decoration: underline; }
 
-  .input-wrap { background: var(--input-bg); transition: background 0.35s ease, box-shadow 0.2s ease; }
+  /* ═══════════════════════════════════════════════
+     INPUT
+     ═══════════════════════════════════════════════ */
+  .input-wrap {
+    background: var(--input-bg);
+    transition: background 0.35s ease, box-shadow 0.2s ease;
+  }
   .input-wrap:focus-within {
     box-shadow: 0 0 0 3px rgba(22,163,74,0.28);
     background: var(--input-bg-focus);
   }
-  .input-wrap input { color: var(--input-text); font-weight: 700; }
-  .input-wrap input::placeholder { color: var(--input-placeholder); font-weight: 600; }
+  .input-wrap input {
+    color: var(--input-text);
+    font-weight: 700;
+  }
+  .input-wrap input::placeholder {
+    color: var(--input-placeholder);
+    font-weight: 600;
+  }
 
-  .attach-btn { transition: all 0.2s ease; flex-shrink: 0; color: #16a34a; }
-  .attach-btn:hover { background: rgba(22,163,74,0.15); color: #15803d; }
+  .attach-btn {
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    color: #16a34a;
+  }
+  .attach-btn:hover {
+    background: rgba(22,163,74,0.15);
+    color: #15803d;
+  }
 
+  /* Send button — pure green */
   .send-btn {
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
@@ -379,6 +567,9 @@
   .send-btn:active:not(:disabled) { transform: translateY(0) scale(0.96); }
   .send-btn:disabled { opacity: 0.6; cursor: wait; }
 
+  /* ═══════════════════════════════════════════════
+     PREVIEW STRIP
+     ═══════════════════════════════════════════════ */
   #previewStrip { display: none; background: var(--footer-bg); }
   #previewStrip.show { display: flex; }
   .preview-thumb {
@@ -390,22 +581,23 @@
   }
   .preview-thumb img, .preview-thumb video { width: 100%; height: 100%; object-fit: cover; }
   .preview-remove {
-    position: absolute; top: -6px; right: -6px;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: #dc2626; color: white; font-size: 12px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; box-shadow: 0 2px 6px -1px rgba(0,0,0,0.3);
-    border: 2px solid white;
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+    border-radius: 50%; background: #dc2626; color: white; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: 0 2px 6px -1px rgba(0,0,0,0.3); border: 2px solid white;
   }
   .preview-remove:hover { background: #b91c1c; }
 
+  /* ═══════════════════════════════════════════════
+     STATUS DOT — green
+     ═══════════════════════════════════════════════ */
   .status-dot {
     width: 8px; height: 8px; border-radius: 50%;
     background: #86efac; position: relative; flex-shrink: 0;
   }
   .status-dot::after {
-    content: ''; position: absolute; inset: -3px;
-    border-radius: 50%; background: #86efac; opacity: 0.7;
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    background: #86efac; opacity: 0.7;
     animation: pulseDot 1.8s ease-out infinite;
   }
   @keyframes pulseDot {
@@ -413,40 +605,82 @@
     100% { transform: scale(2.2); opacity: 0; }
   }
 
+  /* ═══════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════ */
   .app-footer {
-    background: var(--footer-bg); color: var(--footer-text);
-    font-weight: 700; transition: background 0.35s ease, color 0.35s ease;
+    background: var(--footer-bg);
+    color: var(--footer-text);
+    font-weight: 700;
+    transition: background 0.35s ease, color 0.35s ease;
   }
   .clear-btn {
-    transition: all 0.2s ease; color: var(--footer-text); font-weight: 800;
+    transition: all 0.2s ease;
+    color: var(--footer-text);
+    font-weight: 800;
   }
-  .clear-btn:hover { color: #ffffff; background: #16a34a; }
+  .clear-btn:hover {
+    color: #ffffff;
+    background: #16a34a;
+  }
 
+  /* ═══════════════════════════════════════════════
+     HEADER TEXT
+     ═══════════════════════════════════════════════ */
   .trek-title {
-    color: #ffffff; font-weight: 900;
+    color: #ffffff;
+    font-weight: 900;
     letter-spacing: -0.01em;
     text-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.45);
   }
   .trek-sub {
-    color: #dcfce7; font-weight: 700;
+    color: #dcfce7;
+    font-weight: 700;
     text-shadow: 0 1px 4px rgba(0,0,0,0.55);
   }
-  .trek-sub .subtitle { font-weight: 800; letter-spacing: 0.01em; }
+  .trek-sub .subtitle {
+    font-weight: 800;
+    letter-spacing: 0.01em;
+  }
+  .trek-badge {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.3);
+    color: #ffffff;
+    font-weight: 800;
+  }
 
+  /* ═══════════════════════════════════════════════
+     CHIPS
+     ═══════════════════════════════════════════════ */
   .chip {
-    transition: all 0.2s ease; cursor: pointer;
-    white-space: nowrap; user-select: none;
-    position: relative; z-index: 1;
-    background: var(--chip-bg); border: 1px solid var(--chip-border);
-    color: var(--chip-text); font-weight: 700;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    position: relative;
+    z-index: 1;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    color: var(--chip-text);
+    font-weight: 700;
     backdrop-filter: blur(6px);
   }
   .chip:hover {
     transform: translateY(-2px);
-    background: #16a34a; border-color: #16a34a; color: #ffffff;
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #ffffff;
   }
 
-  .form-area { background: var(--footer-bg); transition: background 0.35s ease; }
+  /* ═══════════════════════════════════════════════
+     FORM AREA
+     ═══════════════════════════════════════════════ */
+  .form-area {
+    background: var(--footer-bg);
+    transition: background 0.35s ease;
+  }
 </style>
 </head>
 
@@ -454,6 +688,7 @@
 
   <main class="w-full max-w-3xl app-card rounded-3xl shadow-2xl overflow-hidden relative z-10 mt-2 sm:mt-4">
 
+    <!-- ═══ Header ═══ -->
     <header class="trek-header p-5">
       <div class="stars"></div>
 
@@ -504,10 +739,15 @@
       </div>
     </header>
 
-    <div id="chatWindow" class="chat-window p-4 sm:p-5 flex flex-col" aria-live="polite"></div>
+    <!-- ═══ Chat Window ═══ -->
+    <div id="chatWindow"
+         class="chat-window p-4 sm:p-5 flex flex-col"
+         aria-live="polite"></div>
 
+    <!-- ═══ Preview Strip ═══ -->
     <div id="previewStrip" class="px-4 pt-3 pb-1 gap-2 border-t border-green-200/40"></div>
 
+    <!-- ═══ Input Form ═══ -->
     <form id="chatForm" class="p-3 sm:p-4 form-area">
       <div class="input-wrap flex items-center gap-2 rounded-full p-1.5 pl-2">
 
@@ -539,6 +779,7 @@
       </div>
     </form>
 
+    <!-- ═══ Footer ═══ -->
     <div class="px-5 pb-4 pt-1 flex items-center justify-between text-[11.5px] app-footer">
       <span class="flex items-center gap-1.5">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
@@ -549,7 +790,8 @@
         </svg>
         AI-generated guidance; verify local safety conditions.
       </span>
-      <button id="clearBtn" type="button" class="clear-btn px-3 py-1 rounded-full">
+      <button id="clearBtn" type="button"
+              class="clear-btn px-3 py-1 rounded-full">
         Clear chat
       </button>
     </div>
@@ -557,52 +799,10 @@
   </main>
 
 <script>
-  // ═══════════════════════════════════════════════
-  //  CONFIG
-  // ═══════════════════════════════════════════════
-  const BACKEND_URL = "";
+  // Image search runs through the FastAPI /images proxy.
+  // The Unsplash API key must remain on the backend, never in browser code.
   const IMAGE_COUNT = 4;
   const imageCache = new Map();
-
-  const BOT_AVATAR  = "https://cdn.magicdecor.in/com/2023/02/29234001/image-1682163782-1982.jpg";
-  const USER_AVATAR = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKD4RQPtnIB14IkBIkgY_HXeHgRwKSwkC1gbLY_QbIA&s=10";
-
-  const WELCOME_TEXT =
-    "Namaste! 🙏 Welcome to TrekMate AI.\n" +
-    "Which trekking point would you like to know about? Or where do you want to go today? 🏔️";
-
-  // ⭐ Indian + International trekking destinations
-  const SUGGESTIONS = [
-    { label: "Kedarkantha",       q: "Tell me about Kedarkantha trek" },
-    { label: "Triund",            q: "Tell me about Triund trek" },
-    { label: "Rajgad Fort",       q: "Tell me about Rajgad Fort trek" },
-    { label: "Harishchandragad",  q: "Show me Harishchandragad photos" },
-    { label: "Kalsubai",          q: "Tell me about Kalsubai trek" },
-    { label: "Hampta Pass",       q: "Tell me about Hampta Pass trek" },
-    { label: "Valley of Flowers", q: "Tell me about Valley of Flowers trek" },
-    { label: "Everest Base Camp", q: "Tell me about Everest Base Camp trek" }
-  ];
-
-  // ⭐ Known trek / location names — used for clean image search
-  const KNOWN_LOCATIONS = [
-    // Indian Himalayan
-    "everest base camp", "annapurna base camp", "kedarkantha", "brahmatal",
-    "hampta pass", "valley of flowers", "triund", "har ki dun", "kheerganga",
-    "roopkund", "chadar trek", "sandakphu", "goechala", "kuari pass",
-    "dayara bugyal", "nag tibba", "markha valley", "pin parvati",
-    "rupin pass", "buran ghati", "sar pass", "chopta", "tungnath",
-    "kasol", "spiti", "ladakh", "leh", "manali", "shimla", "mussoorie",
-    "rishikesh", "sikkim", "darjeeling", "kashmir", "gulmarg", "sonamarg",
-    "pahalgam", "araku valley", "munnar", "coorg", "wayanad",
-    // Maharashtra forts / treks
-    "rajgad", "torna", "lohagad", "visapur", "sinhagad", "harishchandragad",
-    "raigad", "prabalgad", "kalsubai", "andharban", "vasota", "devkund",
-    "rajmachi", "ratangad", "tikona", "duke's nose", "korigad",
-    // International
-    "inca trail", "kilimanjaro", "machu picchu", "mount fuji",
-    "tour du mont blanc", "patagonia", "dolomites", "grindelwald",
-    "milford track", "camino de santiago"
-  ];
 
   // ═══════════════════════════════════════════════
   //  THEME TOGGLE
@@ -616,8 +816,27 @@
   });
 
   // ═══════════════════════════════════════════════
-  //  DOM
+  //  CONFIG
   // ═══════════════════════════════════════════════
+  const BACKEND_URL = "";
+  const BOT_AVATAR  = "https://cdn.magicdecor.in/com/2023/02/29234001/image-1682163782-1982.jpg";
+  const USER_AVATAR = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKD4RQPtnIB14IkBIkgY_HXeHgRwKSwkC1gbLY_QbIA&s=10";
+
+  const WELCOME_TEXT =
+    "Namaste! 🙏 Welcome to TrekMate AI.\n" +
+    "Which trekking point would you like to know about? Or where do you want to go today? 🏔️";
+
+  const SUGGESTIONS = [
+    { label: "Kedarkantha", q: "Tell me about Kedarkantha trek" },
+    { label: "Triund Trek", q: "Tell me about Triund trek" },
+    { label: "Kalsubai Peak", q: "Tell me about Kalsubai trek" },
+    { label: "Rajgad Fort", q: "Tell me about Rajgad Fort trek" },
+    { label: "Hampta Pass", q: "Tell me about Hampta Pass trek" },
+    { label: "Valley of Flowers", q: "Tell me about Valley of Flowers trek" },
+    { label: "Harishchandragad", q: "Tell me about Harishchandragad trek" },
+    { label: "Brahmatal", q: "Tell me about Brahmatal trek" }
+  ];
+
   const form = document.getElementById("chatForm");
   const input = document.getElementById("userInput");
   const box = document.getElementById("chatWindow");
@@ -632,13 +851,16 @@
   let pendingFiles = [];
 
   // ═══════════════════════════════════════════════
-  //  TEXT / DOM HELPERS
+  //  TEXT HELPERS
   // ═══════════════════════════════════════════════
   function renderAIText(text) {
     if (!text) return "";
     let s = String(text)
-      .replace(/\r\n/g, "\n").replace(/\r/g, "\n")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
     s = s.replace(/```[\s\S]*?```/g, "");
     s = s.replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/^[ \t]*#{1,6}[ \t]+(.+?)[ \t]*$/gm, "<strong>$1</strong>");
@@ -649,13 +871,16 @@
     s = s.split("\n").map(line =>
       line.replace(/^[ \t]+/, "").replace(/[ \t]+$/, "")
     ).join("\n");
-    return s.replace(/\n{3,}/g, "\n\n").trim();
+    s = s.replace(/\n{3,}/g, "\n\n");
+    return s.trim();
   }
 
   function escapeHtml(s) {
     return String(s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function makeAvatar(src) {
@@ -688,16 +913,21 @@
 
   function quickAsk(text) { input.value = text; askAI(); }
 
+  // ═══════════════════════════════════════════════
+  //  MESSAGE RENDERING
+  // ═══════════════════════════════════════════════
   function addMessage(text, sender) {
     const row = document.createElement("div");
     row.className = "msg-row " + (
-      sender === "user" ? "user" : sender === "error" ? "error" : "ai"
+      sender === "user"  ? "user"  :
+      sender === "error" ? "error" : "ai"
     );
 
     const avatar = makeAvatar(sender === "user" ? USER_AVATAR : BOT_AVATAR);
     const bubble = document.createElement("div");
     bubble.className = "message " + (
-      sender === "user" ? "msg-user" : sender === "error" ? "msg-error" : "msg-ai"
+      sender === "user"  ? "msg-user"  :
+      sender === "error" ? "msg-error" : "msg-ai"
     );
 
     if (sender === "ai") {
@@ -712,8 +942,11 @@
       bubble.textContent = text;
     }
 
-    if (sender === "user") { row.appendChild(bubble); row.appendChild(avatar); }
-    else { row.appendChild(avatar); row.appendChild(bubble); }
+    if (sender === "user") {
+      row.appendChild(bubble); row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar); row.appendChild(bubble);
+    }
 
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
@@ -762,49 +995,39 @@
   }
 
   // ═══════════════════════════════════════════════
-  //  ⭐ LOCATION EXTRACTION
+  //  ⭐ UNSPLASH IMAGE FETCH + GALLERY
   // ═══════════════════════════════════════════════
-  const IMAGE_TOPIC_TERMS = /\b(trek|trekking|hike|hiking|mountain|himalaya|pass|valley|peak|trail|summit|base camp|fort|waterfall|lake|camping|camp|glacier|forest|viewpoint|sunrise|sunset|snowfall|snow trek|route|destination|place|location|photos?|pictures?|images?|show me|dikhao|tasveer|gear|backpack|trekking shoes|tent)\b/i;
+  const IMAGE_TOPIC_TERMS = /\b(trek|trekking|hike|hiking|mountain|himalaya|pass|valley|peak|trail|summit|base camp|fort|waterfall|lake|camping|camp|glacier|forest|national park|sanctuary|viewpoint|sunrise|sunset|snowfall|snow trek|route|destination|place|location|photos?|pictures?|images?|show me|dikhao|tasveer|gear|backpack|trekking shoes|tent)\b/i;
+  const KNOWN_TREKS = /kedarkantha|brahmatal|hampta pass|valley of flowers|triund|har ki dun|kheerganga|roopkund|chadar trek|sandakphu|goechala|goecha la|kuari pass|dayara bugyal|nag tibba|kasol|tungnath|chopta|markha valley|pin parvati|rupin pass|buran ghati|sar pass|rajgad|torna|lohagad|visapur|sinhagad|harishchandragad|raigad|prabalgad|kalsubai|andharban|vasota|devkund|rajmachi|ratangad|tikona|everest base camp|annapurna base camp|hampta|manali|mcleodganj|lonavala|mahabaleshwar/i;
 
-  function extractLocation(question) {
-    const q = String(question || "").toLowerCase();
-
-    // 1. Prefer known destinations (longest match wins)
-    const sorted = [...KNOWN_LOCATIONS].sort((a, b) => b.length - a.length);
-    for (const loc of sorted) {
-      if (q.includes(loc)) return loc;
-    }
-
-    // 2. Fallback: strip filler words
-    let cleaned = String(question || "")
-      .replace(/^(hey|hi|hello|please|show me|tell me about|information about|details about|give me details of|photos of|pictures of|images of|image of|photo of|picture of)\b/gi, " ")
-      .replace(/\b(the|a|an|about|near|in|at|of|for|to|is|are|what|which|how|why|where|when)\b/gi, " ")
-      .replace(/\b(trek|trekking|hike|hiking|photos?|pictures?|images?|information|details|route|guide|please)\b/gi, " ")
-      .replace(/[?!.,]+/g, " ")
+  function buildSearchQuery(question) {
+    let q = String(question || "")
+      .replace(/^(hey|hi|hello|please)\b[,:! ]*/i, "")
+      .replace(/\b(tell me about|can you explain|explain|information about|details about|give me details of|show me|find|search for|photos of|pictures of|images of|image of|photo of|picture of)\b/gi, " ")
+      .replace(/\b(what is|what are|how is|best time to visit|best season for|difficulty of|route for|weather in)\b/gi, " ")
+      .replace(/[?!.]+$/g, "")
       .replace(/\s+/g, " ")
       .trim();
 
-    return cleaned.slice(0, 80) || "trekking himalaya";
+    // Avoid generic suffixes that return unrelated photos for named places.
+    if (!q) q = String(question || "trekking").trim();
+    return q.slice(0, 80);
   }
 
   function isTrekQuery(question) {
     const q = String(question || "");
-    if (IMAGE_TOPIC_TERMS.test(q)) return true;
-    const lower = q.toLowerCase();
-    return KNOWN_LOCATIONS.some(loc => lower.includes(loc));
+    return IMAGE_TOPIC_TERMS.test(q) || KNOWN_TREKS.test(q);
   }
 
-  // ═══════════════════════════════════════════════
-  //  IMAGE FETCH + GALLERY
-  // ═══════════════════════════════════════════════
   async function fetchTrekImages(question) {
     if (!question || !isTrekQuery(question)) return [];
 
-    const searchQuery = extractLocation(question);
+    const searchQuery = buildSearchQuery(question);
     const cacheKey = searchQuery.toLowerCase();
     if (imageCache.has(cacheKey)) return imageCache.get(cacheKey);
 
     try {
+      // Use the backend proxy; never expose the Unsplash key in the browser.
       const url = `${BACKEND_URL}/images?q=${encodeURIComponent(searchQuery)}&count=${IMAGE_COUNT}`;
       const res = await fetch(url, { method: "GET" });
       if (!res.ok) {
@@ -818,7 +1041,8 @@
         full: img.full || img.thumb || img.url,
         alt: img.alt || "Related trekking image",
         credit: img.credit || "Unsplash",
-        creditLink: img.creditLink || img.link || "https://unsplash.com"
+        creditLink: img.creditLink || img.link || "https://unsplash.com",
+        source: img.source || data.source || "Image Search"
       })).filter(img => img.thumb && img.full);
 
       imageCache.set(cacheKey, images);
@@ -833,15 +1057,23 @@
     const wrap = document.createElement("div");
     wrap.className = "gallery-wrap";
     wrap.id = "galleryLoader";
+
     const avatar = makeAvatar(BOT_AVATAR);
     const card = document.createElement("div");
     card.className = "gallery-card";
+
     let grid = "";
-    for (let i = 0; i < IMAGE_COUNT; i++) grid += `<div class="img-skeleton"></div>`;
+    for (let i = 0; i < IMAGE_COUNT; i++) {
+      grid += `<div class="img-skeleton"></div>`;
+    }
+
     card.innerHTML = `
       <div class="gallery-label">📸 Finding trek visuals...</div>
-      <div class="gallery-grid">${grid}</div>`;
-    wrap.appendChild(avatar); wrap.appendChild(card);
+      <div class="gallery-grid">${grid}</div>
+    `;
+
+    wrap.appendChild(avatar);
+    wrap.appendChild(card);
     box.appendChild(wrap);
     box.scrollTop = box.scrollHeight;
     return wrap;
@@ -854,9 +1086,12 @@
 
   function addImageGallery(images, query) {
     if (!images || images.length === 0) return;
+
     const wrap = document.createElement("div");
     wrap.className = "gallery-wrap";
+
     const avatar = makeAvatar(BOT_AVATAR);
+
     const card = document.createElement("div");
     card.className = "gallery-card";
 
@@ -878,11 +1113,15 @@
       image.alt = img.alt;
       image.loading = "lazy";
       image.referrerPolicy = "no-referrer";
-      image.onerror = () => { if (image.src !== img.full) image.src = img.full; };
+
+      // Fallback: if thumb fails, try full
+      image.onerror = () => {
+        if (image.src !== img.full) image.src = img.full;
+      };
 
       cell.appendChild(image);
       cell.addEventListener("click", () =>
-        openLightbox(img.full, img.alt, img.credit, img.creditLink)
+        openLightbox(img.full, img.alt, img.credit, img.creditLink, img.source)
       );
       grid.appendChild(cell);
     });
@@ -891,20 +1130,26 @@
 
     const credit = document.createElement("div");
     credit.className = "gallery-credit";
-    credit.innerHTML = `Powered by <a href="https://unsplash.com/?utm_source=trekmate&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a>`;
+    const sourceName = images[0]?.source || "Image Search";
+    const sourceUrl = sourceName === "Unsplash"
+      ? "https://unsplash.com/?utm_source=trekmate&utm_medium=referral"
+      : "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(query || "trekking");
+    credit.innerHTML = `Images via <a href="${sourceUrl}" target="_blank" rel="noopener">${escapeHtml(sourceName)}</a>`;
     card.appendChild(credit);
 
-    wrap.appendChild(avatar); wrap.appendChild(card);
+    wrap.appendChild(avatar);
+    wrap.appendChild(card);
     box.appendChild(wrap);
     box.scrollTop = box.scrollHeight;
   }
 
-  function openLightbox(src, alt, credit, creditLink) {
+  function openLightbox(src, alt, credit, creditLink, source = "Image Search") {
     const lb = document.createElement("div");
     lb.className = "lightbox";
 
     const img = document.createElement("img");
-    img.src = src; img.alt = alt || "Trek image";
+    img.src = src;
+    img.alt = alt || "Trek image";
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "lb-close";
@@ -913,9 +1158,12 @@
 
     const creditEl = document.createElement("div");
     creditEl.className = "lb-credit";
-    creditEl.innerHTML = `Photo by <a href="${escapeHtml(creditLink)}" target="_blank" rel="noopener">${escapeHtml(credit || "Unsplash")}</a> on Unsplash`;
+    const sourceLabel = source === "Unsplash" ? "on Unsplash" : "via " + source;
+    creditEl.innerHTML = `Source: <a href="${escapeHtml(creditLink)}" target="_blank" rel="noopener">${escapeHtml(credit || source)}</a> ${escapeHtml(sourceLabel)}`;
 
-    lb.appendChild(img); lb.appendChild(closeBtn); lb.appendChild(creditEl);
+    lb.appendChild(img);
+    lb.appendChild(closeBtn);
+    lb.appendChild(creditEl);
     document.body.appendChild(lb);
 
     const close = () => {
@@ -923,11 +1171,15 @@
       setTimeout(() => lb.remove(), 200);
     };
 
-    lb.addEventListener("click", e => {
+    lb.addEventListener("click", (e) => {
       if (e.target === lb || e.target === closeBtn) close();
     });
+
     document.addEventListener("keydown", function onEsc(e) {
-      if (e.key === "Escape") { close(); document.removeEventListener("keydown", onEsc); }
+      if (e.key === "Escape") {
+        close();
+        document.removeEventListener("keydown", onEsc);
+      }
     });
   }
 
@@ -936,7 +1188,7 @@
   // ═══════════════════════════════════════════════
   attachBtn.addEventListener("click", () => fileInput.click());
 
-  fileInput.addEventListener("change", async e => {
+  fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files || []);
     for (const file of files) {
       if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) continue;
@@ -953,10 +1205,10 @@
 
   function readFileAsDataURL(file) {
     return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = reject;
-      r.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
   }
 
@@ -982,14 +1234,17 @@
       const rm = document.createElement("div");
       rm.className = "preview-remove";
       rm.textContent = "×"; rm.title = "Remove";
-      rm.addEventListener("click", () => { pendingFiles.splice(idx, 1); renderPreviewStrip(); });
+      rm.addEventListener("click", () => {
+        pendingFiles.splice(idx, 1);
+        renderPreviewStrip();
+      });
       wrap.appendChild(rm);
       previewStrip.appendChild(wrap);
     });
   }
 
   // ═══════════════════════════════════════════════
-  //  ASK AI — images independent + first, then text
+  //  ASK AI
   // ═══════════════════════════════════════════════
   async function askAI() {
     const question = input.value.trim();
@@ -1014,58 +1269,56 @@
     renderPreviewStrip();
 
     const backendQuestion = question || "I've shared an image or video with you. Please take a look.";
+    const loading = addTypingIndicator();
+
+    // ⭐ Show gallery skeleton (only if trek query + Unsplash enabled)
+    let galleryLoader = null;
     const shouldFetchImages = Boolean(question && isTrekQuery(question));
 
-    // ⭐ Fire both in parallel (images + AI)
-    const imagePromise = shouldFetchImages
-      ? fetchTrekImages(question).catch(() => [])
-      : Promise.resolve([]);
-
-    const aiPromise = fetch(`${BACKEND_URL}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        question: backendQuestion,
-        history: history.slice(-10)
-      })
-    }).then(async res => {
-      const data = await res.json();
-      if (!res.ok || !data.answer) {
-        throw new Error(data.detail || data.error || "No AI response received.");
-      }
-      return data;
-    });
+    // Start image search independently so images can still appear if Gemini quota fails.
+    const imagePromise = shouldFetchImages ? (galleryLoader = addGalleryLoader(), fetchTrekImages(question)) : Promise.resolve([]);
 
     try {
-      // STEP 1 — IMAGES FIRST
-      if (shouldFetchImages) {
-        const galleryLoader = addGalleryLoader();
-        try {
-          const images = await imagePromise;
-          galleryLoader.remove();
-          if (images && images.length > 0) {
-            addImageGallery(images, extractLocation(question));
-          }
-        } catch (err) {
-          galleryLoader.remove();
-          console.warn("Image fetch error:", err);
-        }
+      const response = await fetch(`${BACKEND_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: backendQuestion,
+          history: history.slice(-10)
+        })
+      });
+
+      const data = await response.json();
+      loading.remove();
+
+      if (!response.ok || !data.answer) {
+        throw new Error(data.detail || data.error || "No AI response received.");
       }
 
-      // STEP 2 — THEN AI TEXT
-      const loading = addTypingIndicator();
-      try {
-        const data = await aiPromise;
-        loading.remove();
-        addMessage(data.answer, "ai");
-        history.push(
-          { role: "user", content: backendQuestion },
-          { role: "assistant", content: data.answer }
-        );
-        history = history.slice(-12);
-      } catch (error) {
-        loading.remove();
-        addMessage("Error: " + error.message, "error");
+      addMessage(data.answer, "ai");
+      history.push(
+        { role: "user", content: backendQuestion },
+        { role: "assistant", content: data.answer }
+      );
+      history = history.slice(-12);
+
+      // Render search results even if the AI response took longer than image search.
+      if (shouldFetchImages) {
+        imagePromise.then(images => {
+          removeGalleryLoader();
+          if (images && images.length > 0) addImageGallery(images, buildSearchQuery(question));
+        }).catch(() => removeGalleryLoader());
+      }
+
+    } catch (error) {
+      loading.remove();
+      addMessage("Error: " + error.message, "error");
+      // Keep image search useful even when Gemini fails due to quota/rate limits.
+      if (shouldFetchImages) {
+        imagePromise.then(images => {
+          removeGalleryLoader();
+          if (images && images.length > 0) addImageGallery(images, buildSearchQuery(question));
+        }).catch(() => removeGalleryLoader());
       }
     } finally {
       busy = false;
@@ -1077,7 +1330,7 @@
     }
   }
 
-  form.addEventListener("submit", e => { e.preventDefault(); askAI(); });
+  form.addEventListener("submit", (event) => { event.preventDefault(); askAI(); });
 
   clearBtn.addEventListener("click", () => {
     history = [];
