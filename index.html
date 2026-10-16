@@ -799,16 +799,10 @@
   </main>
 
 <script>
-  // ═══════════════════════════════════════════════
-  //  ⭐ UNSPLASH CONFIG
-  //  → Paste your Unsplash Access Key below.
-  //    Get one at: https://unsplash.com/developers
-  //  → Free tier: 50 requests/hour (demo apps)
-  // ═══════════════════════════════════════════════
-  const UNSPLASH_ACCESS_KEY = "PASTE_YOUR_UNSPLASH_ACCESS_KEY_HERE";
-  const UNSPLASH_ENABLED = UNSPLASH_ACCESS_KEY && !UNSPLASH_ACCESS_KEY.startsWith("PASTE_");
-  const IMAGE_COUNT = 4;          // images per gallery
-  const imageCache = new Map();   // query → images[]
+  // Image search runs through the FastAPI /images proxy.
+  // The Unsplash API key must remain on the backend, never in browser code.
+  const IMAGE_COUNT = 4;
+  const imageCache = new Map();
 
   // ═══════════════════════════════════════════════
   //  THEME TOGGLE
@@ -834,9 +828,13 @@
 
   const SUGGESTIONS = [
     { label: "Kedarkantha",       q: "Tell me about Kedarkantha trek" },
+    { label: "Brahmatal",         q: "Tell me about Brahmatal trek" },
     { label: "Hampta Pass",       q: "Tell me about Hampta Pass trek" },
-    { label: "Beginner Treks",    q: "Best trek for beginners in Himalayas" },
-    { label: "Valley of Flowers", q: "Valley of Flowers trek details" }
+    { label: "Valley of Flowers", q: "Tell me about Valley of Flowers trek" },
+    { label: "Triund Trek",       q: "Tell me about Triund trek" },
+    { label: "Har Ki Dun",        q: "Tell me about Har Ki Dun trek" },
+    { label: "Kheerganga",        q: "Tell me about Kheerganga trek" },
+    { label: "Rajgad Fort",       q: "Tell me about Rajgad Fort trek" }
   ];
 
   const form = document.getElementById("chatForm");
@@ -999,73 +997,57 @@
   // ═══════════════════════════════════════════════
   //  ⭐ UNSPLASH IMAGE FETCH + GALLERY
   // ═══════════════════════════════════════════════
+  const IMAGE_TOPIC_TERMS = /\b(trek|trekking|hike|hiking|mountain|himalaya|pass|valley|peak|trail|summit|base camp|fort|waterfall|lake|camping|camp|glacier|forest|national park|sanctuary|viewpoint|sunrise|sunset|snowfall|snow trek|route|destination|place|location|photos?|pictures?|images?|show me|dikhao|tasveer|gear|backpack|trekking shoes|tent)\b/i;
+  const KNOWN_TREKS = /kedarkantha|brahmatal|hampta pass|valley of flowers|triund|har ki dun|kheerganga|roopkund|chadar trek|sandakphu|goechala|g oecha la|kuari pass|dayara bugyal|nag tibba|kasol|tungnath|chopta|markha valley|pin parvati|rupin pass|buran ghati|sar pass|rajgad|torna|lohagad|visapur|sinhagad|harishchandragad|raigad|prabalgad|kalsubai|andharban|vasota|devkund|rajmachi|ratangad|tikona/i;
+
   function buildSearchQuery(question) {
-    let q = String(question)
-      .replace(/tell me about/gi, "")
-      .replace(/information about/gi, "")
-      .replace(/details about/gi, "")
-      .replace(/information/gi, "")
-      .replace(/details/gi, "")
-      .replace(/please/gi, "")
+    let q = String(question || "")
+      .replace(/^(hey|hi|hello|please)\b[,:! ]*/i, "")
+      .replace(/\b(tell me about|can you explain|explain|information about|details about|give me details of|show me|find|search for|photos of|pictures of|images of|image of|photo of|picture of)\b/gi, " ")
+      .replace(/\b(what is|what are|how is|best time to visit|best season for|difficulty of|route for|weather in)\b/gi, " ")
       .replace(/[?!.]+$/g, "")
       .replace(/\s+/g, " ")
       .trim();
 
-    q = q.slice(0, 60);
-
-    // Add trek context if not present
-    if (!/trek|hike|mountain|himalaya|trail|valley|peak/i.test(q)) {
-      q += " trek himalaya";
-    }
-    return q;
+    // Avoid generic suffixes that return unrelated photos for named places.
+    if (!q) q = String(question || "trekking").trim();
+    return q.slice(0, 80);
   }
 
   function isTrekQuery(question) {
-    return /trek|hike|mountain|himalaya|pass|valley|peak|trail|summit|base\s*camp|uttarakhand|himachal|ladakh|sikkim|nepal|kedarkantha|hampta|roopkund|chadar|sandakphu|goechala/i
-      .test(String(question));
+    const q = String(question || "");
+    return IMAGE_TOPIC_TERMS.test(q) || KNOWN_TREKS.test(q);
   }
 
   async function fetchTrekImages(question) {
-    if (!UNSPLASH_ENABLED) return [];
-    if (!isTrekQuery(question)) return [];
+    if (!question || !isTrekQuery(question)) return [];
 
     const searchQuery = buildSearchQuery(question);
     const cacheKey = searchQuery.toLowerCase();
-
     if (imageCache.has(cacheKey)) return imageCache.get(cacheKey);
 
     try {
-      const res = await fetch(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=${IMAGE_COUNT}&orientation=landscape&content_filter=high`,
-        { headers: { "Authorization": `Client-ID ${UNSPLASH_ACCESS_KEY}` } }
-      );
-
+      // Use the backend proxy; never expose the Unsplash key in the browser.
+      const url = `${BACKEND_URL}/images?q=${encodeURIComponent(searchQuery)}&count=${IMAGE_COUNT}`;
+      const res = await fetch(url, { method: "GET" });
       if (!res.ok) {
-        if (res.status === 403 || res.status === 401) {
-          console.warn("Unsplash: invalid key or rate limited");
-        } else if (res.status === 429) {
-          console.warn("Unsplash: rate limit reached (50/hr on free tier)");
-        } else {
-          console.warn("Unsplash error:", res.status);
-        }
+        console.warn("Image search failed:", res.status);
         return [];
       }
 
       const data = await res.json();
-      const images = (data.results || []).map(img => ({
-        thumb: img.urls.small,
-        full:  img.urls.regular,
-        alt:   img.alt_description || (img.description || "Trek image"),
-        credit: img.user?.name || "Unsplash",
-        creditLink: (img.user?.links?.html || "https://unsplash.com") +
-          "?utm_source=trekmate&utm_medium=referral"
-      }));
+      const images = (data.images || []).map(img => ({
+        thumb: img.thumb || img.full || img.url,
+        full: img.full || img.thumb || img.url,
+        alt: img.alt || "Related trekking image",
+        credit: img.credit || "Unsplash",
+        creditLink: img.creditLink || img.link || "https://unsplash.com"
+      })).filter(img => img.thumb && img.full);
 
       imageCache.set(cacheKey, images);
       return images;
-
     } catch (e) {
-      console.warn("Unsplash fetch failed:", e);
+      console.warn("Backend image search failed:", e);
       return [];
     }
   }
@@ -1285,7 +1267,10 @@
 
     // ⭐ Show gallery skeleton (only if trek query + Unsplash enabled)
     let galleryLoader = null;
-    const shouldFetchImages = UNSPLASH_ENABLED && question && isTrekQuery(question);
+    const shouldFetchImages = Boolean(question && isTrekQuery(question));
+
+    // Start image search independently so images can still appear if Gemini quota fails.
+    const imagePromise = shouldFetchImages ? (galleryLoader = addGalleryLoader(), fetchTrekImages(question)) : Promise.resolve([]);
 
     try {
       const response = await fetch(`${BACKEND_URL}/chat`, {
@@ -1311,23 +1296,24 @@
       );
       history = history.slice(-12);
 
-      // ⭐ Fetch images after AI response (async, non-blocking)
+      // Render search results even if the AI response took longer than image search.
       if (shouldFetchImages) {
-        galleryLoader = addGalleryLoader();
-        fetchTrekImages(question).then(images => {
+        imagePromise.then(images => {
           removeGalleryLoader();
-          if (images && images.length > 0) {
-            addImageGallery(images, buildSearchQuery(question));
-          }
-        }).catch(() => {
-          removeGalleryLoader();
-        });
+          if (images && images.length > 0) addImageGallery(images, buildSearchQuery(question));
+        }).catch(() => removeGalleryLoader());
       }
 
     } catch (error) {
       loading.remove();
-      removeGalleryLoader();
       addMessage("Error: " + error.message, "error");
+      // Keep image search useful even when Gemini fails due to quota/rate limits.
+      if (shouldFetchImages) {
+        imagePromise.then(images => {
+          removeGalleryLoader();
+          if (images && images.length > 0) addImageGallery(images, buildSearchQuery(question));
+        }).catch(() => removeGalleryLoader());
+      }
     } finally {
       busy = false;
       sendBtn.disabled = false;
